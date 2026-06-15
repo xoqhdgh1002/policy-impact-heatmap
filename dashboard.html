@@ -125,6 +125,25 @@
   .rowmark{font-size:10px;font-family:var(--mono);padding:1px 6px;border-radius:99px;border:1px solid var(--line2);color:var(--faint)}
   .rowmark.ok{color:var(--ok);border-color:var(--ok)} .rowmark.fix{color:var(--fix);border-color:var(--fix)} .rowmark.doubt{color:var(--doubt);border-color:var(--doubt)}
 
+  /* source links + verification badges */
+  .evlink{display:inline-flex;align-items:center;font-size:10.5px;color:var(--accent);text-decoration:none;
+    background:var(--surface2);border:1px solid var(--line2);padding:2px 8px;border-radius:99px;margin:0 4px 4px 0;transition:.13s;max-width:100%}
+  .evlink:hover{border-color:var(--accent);background:rgba(52,195,212,.08)}
+  .evlink .evq{color:var(--faint);font-weight:500}
+  @media(max-width:760px){.evlink .evq{display:none}}
+  .needsrc{display:inline-block;font-size:10px;font-weight:700;color:var(--fix);background:rgba(244,198,106,.08);
+    border:1px dashed rgba(244,198,106,.5);padding:2px 9px;border-radius:99px}
+  .vchk{display:inline-block;font-size:10px;font-weight:700;color:var(--ok);background:rgba(127,240,182,.08);
+    border:1px solid rgba(127,240,182,.4);padding:2px 8px;border-radius:99px;white-space:nowrap}
+  .vno{display:inline-block;font-size:10px;font-weight:700;color:var(--faint);border:1px solid var(--line2);padding:2px 8px;border-radius:99px;white-space:nowrap}
+  /* source channel cards */
+  .srcgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px}
+  .srccard{background:var(--surface);border:1px solid var(--line);border-radius:var(--rs);padding:13px 15px;text-decoration:none;display:block;transition:.16s}
+  .srccard:hover{border-color:var(--accent-dim);transform:translateY(-2px)}
+  .srccard .sn{font-size:13.5px;font-weight:800;color:var(--text);display:flex;align-items:center;gap:7px}
+  .srccard .sd{font-size:11.5px;color:var(--muted);margin-top:4px}
+  .srccard .su{font-size:10.5px;color:var(--accent);font-family:var(--mono);margin-top:7px;word-break:break-all}
+
   /* dist bars */
   .dist{display:flex;align-items:flex-end;gap:8px;height:130px;padding:0 4px}
   .bar2{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;justify-content:flex-end;height:100%}
@@ -181,8 +200,9 @@
 
 <div class="wrap">
   <section class="lede">
-    <h2>데모 v1을 <span style="color:var(--gold)">평가 → 수정</span> 루프로 돌리는 화면</h2>
-    <p>모든 점수는 <b style="color:var(--text)">AI 샘플(검수 전)</b>입니다. 각자 자기 <b style="color:var(--text)">구역</b>을 골라 데이터를 보고, 아래 표에서 셀마다 <b style="color:var(--ok)">맞음</b>/<b style="color:var(--fix)">수정</b>/<b style="color:var(--doubt)">의문</b>을 찍고 메모하세요. 다 하면 <b style="color:var(--gold)">피드백 내보내기</b>로 복사 → 팀 텔레그램에 붙여넣으면 봇이 모아 v2에 반영합니다. (체크는 이 브라우저에 자동 저장)</p>
+    <h2>데모를 <span style="color:var(--gold)">출처와 대조해 검증</span>하는 화면 <span class="mono" style="font-size:13px;color:var(--faint);font-weight:700">v2</span></h2>
+    <p>AI가 만든 점수는 <b style="color:var(--text)">초안</b>입니다. 평가 = 감으로 투표가 아니라, 도메인 멤버가 <b style="color:var(--gold)">권위 있는 출처(증권사 리포트·DART 공시·정책 원문)와 대조</b>해 맞는지 검증하는 일입니다. 각자 자기 <b style="color:var(--text)">구역</b>을 골라 데이터·출처를 보고, 셀마다 <b style="color:var(--ok)">맞음</b>/<b style="color:var(--fix)">수정</b>/<b style="color:var(--doubt)">의문</b>을 찍고 메모 → <b style="color:var(--gold)">피드백 내보내기</b>로 복사 → 팀 텔레그램에 붙여넣으면 봇이 모아 다음 버전에 반영합니다. (체크는 이 브라우저에 자동 저장)</p>
+    <span class="warn">💡 이예준 제안 반영 — 평가자가 자기 분야가 아니면 틀릴 수 있으니, 점수는 <b>출처 링크</b>로 뒷받침하고 검증한 사람을 표시합니다. 출처 없는 셀(❓ 분야 밖)은 <b>'출처 보강 필요'</b>로 드러냅니다.</span>
   </section>
 
   <div class="sectit">한눈에 — 지금 데이터</div>
@@ -201,7 +221,7 @@
   <div class="sectit">점수 평가 표 — 14개 셀 (핵심 작업)</div>
   <div class="card" style="padding:8px 10px"><div style="overflow-x:auto">
     <table class="etbl"><thead><tr>
-      <th>정책</th><th>업종</th><th>점수</th><th class="hide-m">근거 (AI 초안)</th><th>내 판정</th><th>메모(수정안)</th>
+      <th>정책</th><th>업종</th><th>점수</th><th class="hide-m">근거 · 출처 · 검증</th><th>내 판정</th><th>메모(수정안)</th>
     </tr></thead><tbody id="etbody"></tbody></table>
   </div></div>
 
@@ -218,7 +238,11 @@
     </div>
   </div>
 
-  <p class="foot">정책 8 · 업종 7 · 평가셀 14 — v1 샘플 · 평가 대시보드 · <a href="index.html">← 히트맵</a></p>
+  <div class="sectit">근거 출처 — 점수를 대조·검증할 곳 (전부 무료)</div>
+  <p class="csub" style="font-size:12.5px;color:var(--muted);margin:-4px 0 12px">이예준 제안. AI 점수의 '왜'를 사람이 권위 있는 자료와 대조하는 채널. FnGuide는 유료라 보류, 아래는 모두 무료입니다.</p>
+  <div class="srcgrid" id="srcgrid"></div>
+
+  <p class="foot">정책 8 · 업종 7 · 평가셀 14 · v2 (이예준 피드백 반영) · 평가 대시보드 · <a href="index.html">← 히트맵</a></p>
 </div>
 
 <div class="exbar">
@@ -240,11 +264,25 @@
 const D = window.DEMO;
 const KEY = "pih-eval-v1";
 
+// source channel lookup (id -> {name,url,...})
+const SRC = {}; (D.sources||[]).forEach(s=>SRC[s.id]=s);
+
 // flatten impact cells
 const CELLS = [];
 D.policies.forEach(p=>p.impacts.forEach(im=>{
-  CELLS.push({id:p.n+"|"+im.s, pn:p.n, pshort:p.short, ptitle:p.title, sector:im.s, v:im.v, reason:im.reason, cos:im.cos});
+  CELLS.push({id:p.n+"|"+im.s, pn:p.n, pshort:p.short, ptitle:p.title, sector:im.s, v:im.v,
+    reason:im.reason, cos:im.cos, vby:im.vby||null, needsrc:!!im.needsrc, ev:im.ev||[]});
 }));
+
+// render a cell's source links (or a "보강 필요" badge)
+function evHTML(c){
+  if(c.ev && c.ev.length){
+    return c.ev.map(e=>{const s=SRC[e.s]; if(!s)return"";
+      return `<a class="evlink" href="${s.url}" target="_blank" rel="noopener" title="${s.name} — ${e.q}">🔗 ${s.name}<span class="evq"> · ${e.q}</span></a>`;}).join("");
+  }
+  return `<span class="needsrc">출처 보강 필요</span>`;
+}
+function vbyHTML(c){ return c.vby?`<span class="vchk">✓ ${c.vby} 검증</span>`:`<span class="vno">미검증</span>`; }
 
 // state
 let state = load();
@@ -260,10 +298,14 @@ function renderKPI(){
   const avg=(CELLS.reduce((a,c)=>a+Math.abs(c.v),0)/CELLS.length).toFixed(2);
   const marked=Object.keys(state.marks).filter(k=>state.marks[k].verdict).length;
   const pct=Math.round(marked/CELLS.length*100);
+  const verified=CELLS.filter(c=>c.vby).length;
+  const sourced=CELLS.filter(c=>c.ev&&c.ev.length).length;
+  const srcpct=Math.round(sourced/CELLS.length*100);
   document.getElementById("kpis").innerHTML = `
-   <div class="kpi"><div class="n">${D.policies.length}</div><div class="l">정책 / 규제</div><div class="sub">${D.sectors.length}개 업종 매핑</div></div>
-   <div class="kpi"><div class="n">${CELLS.length}</div><div class="l">평가 셀 (정책×업종)</div><div class="sub">전부 도메인 검수 전</div></div>
+   <div class="kpi"><div class="n">${CELLS.length}</div><div class="l">평가 셀 (정책×업종)</div><div class="sub">정책 ${D.policies.length} · 업종 ${D.sectors.length}</div></div>
    <div class="kpi"><div class="n" style="color:var(--pos-ink)">${pos}<span class="faint" style="font-size:15px"> / </span><span style="color:var(--neg-ink)">${neg}</span></div><div class="l">수혜(+) / 피해(−)</div><div class="sub">평균 강도 |${avg}|</div></div>
+   <div class="kpi"><div class="n" style="color:var(--ok)">${verified}<span class="faint" style="font-size:15px">/${CELLS.length}</span></div><div class="l">도메인 검증된 셀</div><div class="sub">출처와 대조해 검증됨</div></div>
+   <div class="kpi"><div class="n" style="color:var(--accent)">${srcpct}<span style="font-size:16px">%</span></div><div class="l">출처 커버리지</div><div class="bar"><i style="width:${srcpct}%;background:var(--accent)"></i></div><div class="sub">${sourced}/${CELLS.length} 셀 근거 링크 · 보강필요 ${CELLS.length-sourced}</div></div>
    <div class="kpi hot"><div class="n">${pct}<span style="font-size:16px">%</span></div><div class="l">내 평가 진행률</div><div class="bar"><i style="width:${pct}%"></i></div><div class="sub">${marked}/${CELLS.length} 셀 판정</div></div>`;
 }
 
@@ -307,10 +349,11 @@ function coChips(cos){return cos.map(c=>`<span class="cohip">${c}</span>`).join(
 function sliceBody(slice){
   if(slice==="schema"){
     return `<div class="kv"><span class="k">정책 객체</span><span class="v">${D.policies.length} { n,title,date,src,cat,status,summary,changes[],impacts[] }</span></div>
-      <div class="kv"><span class="k">impact 셀</span><span class="v">${CELLS.length} { s(업종), v(−3~+3), reason, cos[] }</span></div>
+      <div class="kv"><span class="k">impact 셀</span><span class="v">${CELLS.length} { s, v(−3~+3), reason, cos[], <b style="color:var(--accent)">ev[], vby, needsrc</b> }</span></div>
+      <div class="kv"><span class="k">근거 출처(ev)</span><span class="v">${(D.sources||[]).length} 채널 (DART·한경컨센서스·네이버·법제처)</span></div>
       <div class="kv"><span class="k">업종 축</span><span class="v">${D.sectors.length}</span></div>
       <div class="kv"><span class="k">데이터 소스</span><span class="v">data.js (단일 소스 → 히트맵·대시보드 공유)</span></div>
-      <p class="pdesc" style="margin-top:14px">평가 포인트: ① 멤버는 <b style="color:var(--text)">v(점수)·reason만 고치면</b> 반영되는 구조 (사람=Eval, 코딩=AI). ② 자동 루프(수집→추출→점수화)로 갈 때 이 스키마면 충분한가? ③ 배포 링크는 GitHub Pages로 라이브.</p>`;
+      <p class="pdesc" style="margin-top:14px">v2 스키마 변화(이예준 피드백): 셀마다 <b style="color:var(--accent)">ev[]</b>(근거 출처 링크)·<b style="color:var(--ok)">vby</b>(검증자)·<b style="color:var(--fix)">needsrc</b>(보강 필요)를 둬서, 점수가 사람의 감이 아니라 <b style="color:var(--text)">출처로 뒷받침</b>되게 함. 다음: ev 출처를 자동 수집(DART·리포트 크롤)해 AI가 출처 기반으로 점수화 → 사람은 검증만.</p>`;
   }
   if(slice==="scores"){
     const rows=[...CELLS].sort((a,b)=>Math.abs(b.v)-Math.abs(a.v)).map(c=>
@@ -320,9 +363,11 @@ function sliceBody(slice){
   }
   if(slice==="mapping"){
     const rows=D.policies.map(p=>`<tr><td class="mono faint">${p.n}</td><td>${p.short}</td>
-      <td>${p.impacts.map(im=>`<div style="margin-bottom:6px"><b>${im.s}</b> <span class="sc ${scClass(im.v)}" style="font-size:11px">${sign(im.v)}${im.v}</span><br>${coChips(im.cos)}</div>`).join("")}</td></tr>`).join("");
-    return `<p class="pdesc">정책별 영향 업종·기업. <b style="color:var(--text)">빠진 수혜/피해 대상</b>이나 오매핑은 평가 표에서 의문/수정 + 메모.</p>
-      <table><thead><tr><th>P</th><th>정책</th><th>영향 업종 · 기업</th></tr></thead><tbody>${rows}</tbody></table>`;
+      <td>${p.impacts.map(im=>{const c={ev:im.ev||[],vby:im.vby||null,needsrc:!!im.needsrc};
+        return `<div style="margin-bottom:9px"><b>${im.s}</b> <span class="sc ${scClass(im.v)}" style="font-size:11px">${sign(im.v)}${im.v}</span> ${vbyHTML(c)}<br>${coChips(im.cos)}
+        <div style="margin-top:4px;display:flex;flex-wrap:wrap;gap:3px">${evHTML(c)}</div></div>`;}).join("")}</td></tr>`).join("");
+    return `<p class="pdesc">정책별 영향 업종·기업 + <b style="color:var(--text)">근거 출처</b>. 매핑이 맞는지 <b style="color:var(--gold)">출처 링크로 대조</b>해 검증하고, 빠진 대상·오매핑·출처 부족은 평가 표에서 의문/수정 + 메모. ❓ 분야 밖 셀은 출처 보강이 필요합니다.</p>
+      <table><thead><tr><th>P</th><th>정책</th><th>영향 업종 · 기업 · 출처</th></tr></thead><tbody>${rows}</tbody></table>`;
   }
   if(slice==="vertical"){
     const cov=D.sectors.map(s=>{const cs=CELLS.filter(c=>c.sector===s);return {s,n:cs.length,sum:cs.reduce((a,c)=>a+c.v,0)};}).sort((a,b)=>b.n-a.n);
@@ -353,7 +398,9 @@ function renderTable(){
       <td><span class="mono faint">${c.pn}</span> ${c.pshort}</td>
       <td>${c.sector}</td>
       <td><span class="sc ${scClass(c.v)}">${sign(c.v)}${c.v}</span></td>
-      <td class="hide-m muted" style="max-width:300px">${c.reason}<div style="margin-top:4px">${coChips(c.cos)}</div></td>
+      <td class="hide-m muted" style="max-width:320px">${c.reason}
+        <div style="margin-top:5px">${coChips(c.cos)}</div>
+        <div style="margin-top:7px;display:flex;flex-wrap:wrap;align-items:center;gap:3px">${evHTML(c)} ${vbyHTML(c)}</div></td>
       <td><div class="verds">${vb('ok','맞음')}${vb('fix','수정')}${vb('doubt','의문')}</div></td>
       <td><textarea class="note" placeholder="수정안 / 근거..." onchange="setNote('${c.id}',this.value)">${(mk.note||"").replace(/</g,'&lt;')}</textarea></td>
     </tr>`;}).join("");
@@ -393,6 +440,16 @@ function renderRollup(){
     </div>`;}).join("");
 }
 
+/* ---------- source channels ---------- */
+function renderSources(){
+  const el=document.getElementById("srcgrid"); if(!el) return;
+  el.innerHTML=(D.sources||[]).map(s=>{
+    const used=CELLS.filter(c=>(c.ev||[]).some(e=>e.s===s.id)).length;
+    return `<a class="srccard" href="${s.url}" target="_blank" rel="noopener">
+      <div class="sn">🔗 ${s.name}<span class="faint mono" style="font-size:10px;font-weight:700;margin-left:auto">${used}셀</span></div>
+      <div class="sd">${s.desc}</div><div class="su">${s.url.replace(/^https?:\/\//,"")}</div></a>`;}).join("");
+}
+
 /* ---------- export ---------- */
 function renderExport(){
   const marked=Object.values(state.marks).filter(m=>m.verdict).length;
@@ -427,7 +484,7 @@ let tt;
 function toast(msg){ const t=document.getElementById("toast"); t.textContent=msg; t.classList.add("show"); clearTimeout(tt); tt=setTimeout(()=>t.classList.remove("show"),3400); }
 
 /* ---------- init ---------- */
-renderKPI(); renderWho(); renderZones(); renderTable(); renderDist(); renderRollup(); renderExport();
+renderKPI(); renderWho(); renderZones(); renderTable(); renderDist(); renderRollup(); renderSources(); renderExport();
 if(state.evaluator){ const z=D.zones.find(x=>x.member===state.evaluator); if(z) openPanel(z.id); }
 </script>
 </body>

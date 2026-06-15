@@ -151,6 +151,12 @@
   .evalrow{display:flex;align-items:center;gap:7px;margin-top:9px;padding-top:9px;border-top:1px dashed var(--line2);
     font-size:11.5px;color:var(--faint)}
   .evalrow b{color:#f4c66a}
+  .evsrc{display:flex;flex-wrap:wrap;gap:5px;margin-top:9px}
+  .evl{display:inline-flex;align-items:center;font-size:10.5px;color:var(--accent);text-decoration:none;
+    background:var(--surface2);border:1px solid var(--line2);padding:2px 9px;border-radius:99px;transition:.13s}
+  .evl:hover{border-color:var(--accent);background:rgba(52,195,212,.08)}
+  .needsrc{display:inline-block;font-size:10px;font-weight:700;color:#f4c66a;background:rgba(244,198,106,.08);
+    border:1px dashed rgba(244,198,106,.5);padding:2px 9px;border-radius:99px}
 
   /* ---- loop footer ---- */
   .loop{margin-top:42px;padding:26px 22px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r)}
@@ -228,11 +234,12 @@
       <div class="arrow">→</div>
       <div class="step"><span class="si">04</span><h5>표시</h5><p>이 히트맵</p></div>
       <div class="arrow">→</div>
-      <div class="step eval"><span class="si">05</span><h5>Eval ★</h5><p>도메인 멤버가 <a href="dashboard.html" style="color:#f4c66a">평가 대시보드</a>에서 정답셋과 대조 → 룰 개선 → 루프 반복</p></div>
+      <div class="step eval"><span class="si">05</span><h5>Eval ★</h5><p>도메인 멤버가 <a href="dashboard.html" style="color:#f4c66a">평가 대시보드</a>에서 <b style="color:#f4c66a">권위 있는 출처(증권사 리포트·DART 공시)와 대조</b>해 검증 → 룰 개선 → 반복</p></div>
     </div>
+    <p class="sub" style="margin:16px 0 0">근거 출처: DART 전자공시 · 한경컨센서스 · 네이버 금융 리서치 · 법제처 (전부 무료). 평가는 사용자의 감이 아니라 <b style="color:var(--muted)">출처로 뒷받침된 도메인 검증</b>입니다.</p>
   </section>
 
-  <p class="foot">정책 8건 · 업종 7개 — 샘플 데이터 · v1 프로토타입 · <a href="dashboard.html">평가 대시보드 →</a></p>
+  <p class="foot">정책 8건 · 업종 7개 — 샘플 데이터 · v2 (이예준 피드백: 근거 출처·검증자 반영) · <a href="dashboard.html">평가 대시보드 →</a></p>
 </div>
 
 <div class="scrim" id="scrim" onclick="closeDrawer()"></div>
@@ -246,6 +253,12 @@
 <script>
 const SECTORS = window.DEMO.sectors;
 const POLICIES = window.DEMO.policies;
+const SRC = {}; (window.DEMO.sources||[]).forEach(s=>SRC[s.id]=s);
+function evLinks(im){
+  const ev=im.ev||[];
+  if(ev.length) return ev.map(e=>{const s=SRC[e.s]; return s?`<a class="evl" href="${s.url}" target="_blank" rel="noopener" title="${s.name} — ${e.q}">🔗 ${s.name}</a>`:"";}).join("");
+  return `<span class="needsrc">출처 보강 필요</span>`;
+}
 
 // build matrix lookup
 const M = {};
@@ -293,7 +306,8 @@ function openPolicy(n, hot){
         <span class="score ${pos?'pos':'neg'}">${sign}${im.v}</span></div>
       <div class="reason">${im.reason}</div>
       <div class="cos">${im.cos.map(c=>`<span class="co">${c}</span>`).join("")}</div>
-      <div class="evalrow">◍ 점수 상태: <b>도메인 검수 전 (AI 샘플)</b> — 김태윤·이예준 Eval 대기</div>
+      <div class="evsrc">${evLinks(im)}</div>
+      <div class="evalrow">${im.vby?`✓ 점수 상태: <b style="color:var(--pos-ink)">${im.vby} 검증</b> — 출처와 대조 완료`:im.needsrc?`◍ 점수 상태: <b>출처 보강 필요</b> — 분야 전문가·근거 대기`:`◍ 점수 상태: <b>AI 초안</b> — 도메인 검증 대기`}</div>
     </div>`;}).join("");
   document.getElementById("dbody").innerHTML = `
     <div class="dsec"><div class="dt">정책 요약</div><p>${p.summary}</p></div>
