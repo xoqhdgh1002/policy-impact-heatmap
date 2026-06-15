@@ -20,6 +20,35 @@ window.DEMO = {
   ],
   // FnGuide는 유료 → 보류. (이예준 메모)
 
+  // ── AI 스킬 레지스트리 (피드백 트리아지의 결과물) ───────────────────────────
+  // 멤버 코멘트를 'AI 필요/불필요'로 가른 뒤, AI가 필요한 능력을 재사용 단위(skill)로 정의.
+  // 제품 파이프라인이 이 목록을 읽어 단계를 구성한다. status 토글/항목 추가 = 제품에 스킬 추가.
+  //  ai     : AI(생성·추론·검색·파싱)가 본질적으로 필요한가
+  //  status : live(제품 반영) · partial(부분 반영) · manual(수동 운영, 자동화 대상) · planned(스펙만)
+  //  io     : 입력 → 출력(data.js 어느 필드를 채우나)
+  //  spec   : 상세 스펙 문서
+  skills: [
+    { id:"policy-extract", name:"정책 추출", ai:true, status:"manual",
+      why:"비정형 원문(법령·보도자료)에서 핵심 변화점을 요약 — 요약·생성은 AI 영역",
+      io:"정책 원문 → summary, changes[]", trigger:"새 정책 수집 시", src:"law", spec:"skills/policy-extract.md" },
+    { id:"impact-score", name:"영향 점수화", ai:true, status:"manual",
+      why:"정책→영향 업종·기업 추론 + −3~+3 점수·근거 생성 (도메인 룰과 결합)",
+      io:"정책 요약 + 업종 축 → impacts[]{s,v,reason,cos}", trigger:"추출 직후", src:"consen", spec:"skills/impact-score.md" },
+    { id:"thesis-write", name:"상세 분석 작성", ai:true, status:"live",
+      why:"정책 핵심→수혜 업종→업종 내 top 기업 서술 생성 (이예준 요청) — 전형적 생성 작업",
+      io:"정책 + impacts → thesis", trigger:"점수 후 / 상세분석 요청", src:"consen", spec:"skills/thesis-write.md" },
+    { id:"evidence-link", name:"근거 출처 연결", ai:true, status:"partial",
+      why:"점수를 뒷받침할 리포트·공시를 검색·매칭하고 미확인은 보강표시 (이예준 구조 제안)",
+      io:"impact 셀 → ev[]{s,q}, vby/needsrc", trigger:"점수 후 / 검증 시", src:"consen", spec:"skills/evidence-link.md" },
+    { id:"dart-financials", name:"DART 재무 추출", ai:true, status:"planned",
+      why:"사업보고서에서 부문별 매출/이익 비중을 파싱해 thesis의 빈 수치를 채움 (이예준 핵심)",
+      io:"기업/종목 → 부문별 매출·이익 비중", trigger:"thesis 보강 / 검증", src:"dart", spec:"skills/dart-financials.md" },
+    { id:"feedback-route", name:"피드백 라우팅", ai:true, status:"planned",
+      why:"들어온 코멘트를 'AI 필요/불필요'로 분류해 스킬 또는 사람에게 자동 배정 — 본 트리아지의 자동화",
+      io:"멤버 코멘트 → 분류 + 대상 스킬/액션", trigger:"피드백 수신 시", spec:"skills/feedback-route.md" }
+  ],
+  // AI 불필요(사람·코드)로 분류되는 코멘트는 skills에 넣지 않는다 → feedback-triage.md 라우팅표 참조.
+
   sectors: ["반도체/IT","2차전지·전기차","금융/증권·보험","건설/부동산","바이오/제약","에너지/원전·신재생","통신/플랫폼"],
 
   // 평가 구역(eval-board.md 6구역과 1:1). 대시보드가 멤버별 데이터 슬라이스를 그린다.

@@ -136,6 +136,21 @@
   .vchk{display:inline-block;font-size:10px;font-weight:700;color:var(--ok);background:rgba(127,240,182,.08);
     border:1px solid rgba(127,240,182,.4);padding:2px 8px;border-radius:99px;white-space:nowrap}
   .vno{display:inline-block;font-size:10px;font-weight:700;color:var(--faint);border:1px solid var(--line2);padding:2px 8px;border-radius:99px;white-space:nowrap}
+  /* AI skill pipeline */
+  .skillflow{display:grid;grid-template-columns:repeat(auto-fill,minmax(255px,1fr));gap:10px}
+  .skill{background:var(--surface);border:1px solid var(--line);border-radius:var(--rs);padding:13px 15px;position:relative}
+  .skill .stop{display:flex;align-items:center;gap:8px;margin-bottom:5px}
+  .skill .num{font-family:var(--mono);font-size:10px;color:var(--faint);font-weight:700}
+  .skill h4{font-size:13.5px;font-weight:800}
+  .skill .aibadge{font-size:9.5px;font-weight:800;font-family:var(--mono);color:var(--accent);border:1px solid var(--accent-dim);padding:1px 6px;border-radius:99px}
+  .skill .st{margin-left:auto;font-size:9.5px;font-weight:800;font-family:var(--mono);padding:2px 8px;border-radius:99px;white-space:nowrap}
+  .skill .st.live{color:var(--ok);background:rgba(127,240,182,.1);border:1px solid rgba(127,240,182,.4)}
+  .skill .st.partial{color:var(--doubt);background:rgba(157,180,255,.1);border:1px solid rgba(157,180,255,.4)}
+  .skill .st.manual{color:var(--fix);background:rgba(244,198,106,.08);border:1px dashed rgba(244,198,106,.5)}
+  .skill .st.planned{color:var(--faint);border:1px dashed var(--line2)}
+  .skill .why{font-size:11.5px;color:var(--muted);line-height:1.5;margin-bottom:8px}
+  .skill .io{font-size:10.5px;font-family:var(--mono);color:var(--faint);background:var(--bg2);border:1px solid var(--line);border-radius:6px;padding:5px 8px;line-height:1.45}
+  .skill .io b{color:var(--accent)}
   /* source channel cards */
   .srcgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px}
   .srccard{background:var(--surface);border:1px solid var(--line);border-radius:var(--rs);padding:13px 15px;text-decoration:none;display:block;transition:.16s}
@@ -237,6 +252,10 @@
       <div id="rollup"></div>
     </div>
   </div>
+
+  <div class="sectit">피드백 → AI 스킬 파이프라인 — 코멘트가 제품이 되는 길</div>
+  <p class="csub" style="font-size:12.5px;color:var(--muted);margin:-4px 0 12px">멤버 코멘트를 <b style="color:var(--text)">AI 필요/불필요</b>로 가르고, AI가 필요한 능력은 재사용 <b style="color:var(--gold)">스킬</b>로 만들어 제품 파이프라인에 꽂는다. 회사명 교정·UI·점수 척도 결정 등 <b style="color:var(--text)">사람/코드 몫</b>은 스킬이 아니라 라우팅(<span class="mono">feedback-triage.md</span>)으로 처리.</p>
+  <div class="skillflow" id="skillflow"></div>
 
   <div class="sectit">근거 출처 — 점수를 대조·검증할 곳 (전부 무료)</div>
   <p class="csub" style="font-size:12.5px;color:var(--muted);margin:-4px 0 12px">이예준 제안. AI 점수의 '왜'를 사람이 권위 있는 자료와 대조하는 채널. FnGuide는 유료라 보류, 아래는 모두 무료입니다.</p>
@@ -440,6 +459,20 @@ function renderRollup(){
     </div>`;}).join("");
 }
 
+/* ---------- AI skill pipeline ---------- */
+function renderSkills(){
+  const el=document.getElementById("skillflow"); if(!el) return;
+  const stLbl={live:"✅ 제품 반영",partial:"◐ 부분 반영",manual:"○ 수동(자동화 대상)",planned:"○ 스펙"};
+  el.innerHTML=(D.skills||[]).map((s,i)=>`
+    <div class="skill">
+      <div class="stop"><span class="num">S${i+1}</span><h4>${s.name}</h4>
+        ${s.ai?'<span class="aibadge">AI</span>':''}
+        <span class="st ${s.status}">${stLbl[s.status]||s.status}</span></div>
+      <div class="why">${s.why}</div>
+      <div class="io"><b>IO</b> ${s.io||"—"}<br><b>트리거</b> ${s.trigger||"—"}</div>
+    </div>`).join("");
+}
+
 /* ---------- source channels ---------- */
 function renderSources(){
   const el=document.getElementById("srcgrid"); if(!el) return;
@@ -484,7 +517,7 @@ let tt;
 function toast(msg){ const t=document.getElementById("toast"); t.textContent=msg; t.classList.add("show"); clearTimeout(tt); tt=setTimeout(()=>t.classList.remove("show"),3400); }
 
 /* ---------- init ---------- */
-renderKPI(); renderWho(); renderZones(); renderTable(); renderDist(); renderRollup(); renderSources(); renderExport();
+renderKPI(); renderWho(); renderZones(); renderTable(); renderDist(); renderRollup(); renderSkills(); renderSources(); renderExport();
 if(state.evaluator){ const z=D.zones.find(x=>x.member===state.evaluator); if(z) openPanel(z.id); }
 </script>
 </body>
