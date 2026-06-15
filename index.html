@@ -134,6 +134,12 @@
   .dsec{margin-bottom:20px}
   .dsec .dt{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);font-weight:700;margin-bottom:8px}
   .dsec p{font-size:13.5px;color:var(--text);line-height:1.6}
+  .dsec.thesis{background:linear-gradient(180deg,rgba(244,198,106,.07),transparent);border:1px solid rgba(244,198,106,.28);
+    border-radius:var(--rs);padding:14px 15px;margin-top:6px}
+  .dsec.thesis .dt{color:#f4c66a}
+  .dsec.thesis p{font-size:13px;color:var(--text);line-height:1.66}
+  .thesis-tag{margin-top:10px;font-size:10.5px;color:var(--faint);font-family:var(--mono);display:flex;align-items:center;gap:6px}
+  .thesis-tag b{color:#f4c66a;font-weight:700}
   .chgs{display:flex;flex-direction:column;gap:6px}
   .chgs li{list-style:none;font-size:13px;color:var(--muted);padding-left:16px;position:relative}
   .chgs li:before{content:"▸";position:absolute;left:0;color:var(--accent)}
@@ -309,10 +315,15 @@ function openPolicy(n, hot){
       <div class="evsrc">${evLinks(im)}</div>
       <div class="evalrow">${im.vby?`✓ 점수 상태: <b style="color:var(--pos-ink)">${im.vby} 검증</b> — 출처와 대조 완료`:im.needsrc?`◍ 점수 상태: <b>출처 보강 필요</b> — 분야 전문가·근거 대기`:`◍ 점수 상태: <b>AI 초안</b> — 도메인 검증 대기`}</div>
     </div>`;}).join("");
+  const thesisSec = p.thesis ? `
+    <div class="dsec thesis"><div class="dt">📌 상세 분석 — 업종 내 최대 수혜/피해</div>
+      <p>${p.thesis}</p>
+      <div class="thesis-tag">◍ <b>AI 초안</b> · 매출/이익 비중은 DART·리포트로 검증 필요</div></div>` : "";
   document.getElementById("dbody").innerHTML = `
     <div class="dsec"><div class="dt">정책 요약</div><p>${p.summary}</p></div>
     <div class="dsec"><div class="dt">핵심 변화점</div><ul class="chgs">${p.changes.map(c=>`<li>${c}</li>`).join("")}</ul></div>
-    <div class="dsec"><div class="dt">수혜 / 피해 (업종 · 기업)</div>${impacts}</div>`;
+    <div class="dsec"><div class="dt">수혜 / 피해 (업종 · 기업)</div>${impacts}</div>
+    ${thesisSec}`;
   scrim.classList.add("open"); drawer.classList.add("open"); drawer.setAttribute("aria-hidden","false");
 }
 function closeDrawer(){ scrim.classList.remove("open"); drawer.classList.remove("open"); drawer.setAttribute("aria-hidden","true"); }
