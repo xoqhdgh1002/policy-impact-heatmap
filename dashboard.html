@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>데모 평가 대시보드 · 정책 임팩트 히트맵</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" rel="stylesheet" media="print" onload="this.media='all'">
+<noscript><link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" rel="stylesheet"></noscript>
+<style>
+  :root{
+    --bg:#0a0c10; --bg2:#0f1218; --surface:#141821; --surface2:#1b212c;
+    --line:#262d3a; --line2:#333b4a;
+    --text:#e8eaef; --muted:#9aa3b4; --faint:#646d7e;
+    --accent:#34c3d4; --accent-dim:#1d6b75; --gold:#f4c66a;
+    --pos1:hsl(154 42% 18%); --pos2:hsl(154 50% 25%); --pos3:hsl(154 58% 33%);
+    --neg1:hsl(4 44% 21%); --neg2:hsl(4 56% 30%); --neg3:hsl(4 66% 39%);
+    --pos-ink:#7ff0b6; --neg-ink:#ff9b93;
+    --ok:#7ff0b6; --fix:#f4c66a; --doubt:#9db4ff;
+    --r:14px; --rs:9px;
+    --mono:"SFMono-Regular",ui-monospace,"JetBrains Mono",Menlo,Consolas,monospace;
+    --sans:"Pretendard","Pretendard Variable",system-ui,-apple-system,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{font-family:var(--sans);background:var(--bg);color:var(--text);line-height:1.5;-webkit-font-smoothing:antialiased;
+    background-image:radial-gradient(900px 500px at 88% -8%, rgba(52,195,212,.07), transparent 60%),
+                     radial-gradient(700px 400px at 5% 0%, rgba(244,198,106,.05), transparent 55%);
+    min-height:100vh;padding-bottom:78px}
+  .wrap{max-width:1180px;margin:0 auto;padding:0 22px 60px}
+  a{color:var(--accent)}
+
+  header{position:sticky;top:0;z-index:30;backdrop-filter:blur(14px);
+    background:linear-gradient(180deg,rgba(10,12,16,.92),rgba(10,12,16,.7));border-bottom:1px solid var(--line)}
+  .hbar{max-width:1180px;margin:0 auto;padding:14px 22px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+  .brand{display:flex;flex-direction:column;gap:2px;margin-right:auto}
+  .brand .kicker{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);font-weight:700}
+  .brand h1{font-size:19px;font-weight:800;letter-spacing:-.02em;display:flex;align-items:center;gap:9px}
+  .brand h1 .dot{width:8px;height:8px;border-radius:50%;background:var(--gold);box-shadow:0 0 14px var(--gold)}
+  .nav{display:flex;gap:6px}
+  .nav a{font-size:12.5px;font-weight:700;text-decoration:none;color:var(--muted);background:var(--surface);
+    border:1px solid var(--line2);padding:7px 13px;border-radius:99px;transition:.15s}
+  .nav a:hover{color:var(--text);border-color:var(--faint)}
+  .nav a.on{color:var(--bg);background:var(--gold);border-color:var(--gold)}
+  .dday{font-family:var(--mono);font-size:12px;color:var(--muted);border:1px solid var(--line2);padding:5px 10px;border-radius:99px;background:var(--surface)}
+
+  .lede{padding:28px 0 6px}
+  .lede h2{font-size:clamp(20px,2.4vw,28px);font-weight:800;letter-spacing:-.025em;line-height:1.2}
+  .lede p{color:var(--muted);max-width:720px;font-size:14px;margin-top:8px}
+  .lede .warn{margin-top:10px;font-size:12px;color:var(--gold);background:rgba(244,198,106,.07);
+    border:1px solid rgba(244,198,106,.25);padding:8px 12px;border-radius:9px;display:inline-block}
+
+  .sectit{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);font-weight:700;margin:30px 0 12px;display:flex;align-items:center;gap:9px}
+  .sectit::after{content:"";flex:1;height:1px;background:var(--line)}
+
+  /* KPI */
+  .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+  .kpi{background:var(--surface);border:1px solid var(--line);border-radius:var(--rs);padding:14px 15px}
+  .kpi .n{font-family:var(--mono);font-size:26px;font-weight:800;letter-spacing:-.02em}
+  .kpi .l{font-size:11.5px;color:var(--faint);margin-top:3px}
+  .kpi .sub{font-size:11px;color:var(--muted);margin-top:5px}
+  .kpi.hot{border-color:var(--accent-dim)}
+  .kpi.hot .n{color:var(--accent)}
+  .kpi .bar{height:5px;background:var(--surface2);border-radius:99px;margin-top:8px;overflow:hidden}
+  .kpi .bar i{display:block;height:100%;background:var(--gold);border-radius:99px;transition:width .4s}
+
+  /* evaluator picker */
+  .who{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .who .lbl{font-size:12.5px;font-weight:700;color:var(--muted)}
+  .mchip{font-size:12.5px;font-weight:700;color:var(--muted);background:var(--surface2);border:1px solid var(--line2);
+    padding:7px 13px;border-radius:99px;cursor:pointer;transition:.15s}
+  .mchip:hover{color:var(--text);border-color:var(--faint)}
+  .mchip.on{color:var(--bg);background:var(--accent);border-color:var(--accent)}
+
+  /* zone cards */
+  .zones{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:12px}
+  .zone{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px 17px;cursor:pointer;transition:.16s;position:relative;overflow:hidden}
+  .zone:hover{border-color:var(--accent-dim);transform:translateY(-2px)}
+  .zone.active{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent-dim)}
+  .zone .zt{display:flex;align-items:center;gap:9px;margin-bottom:4px}
+  .zone .zn{font-family:var(--mono);font-size:11px;color:var(--accent);font-weight:700}
+  .zone h4{font-size:15px;font-weight:800;letter-spacing:-.01em}
+  .zone .role{font-size:12px;color:var(--muted);margin-bottom:11px}
+  .zone .qs{display:flex;flex-direction:column;gap:5px;margin-bottom:12px}
+  .zone .qs li{list-style:none;font-size:12px;color:var(--muted);padding-left:15px;position:relative;line-height:1.4}
+  .zone .qs li:before{content:"?";position:absolute;left:0;color:var(--gold);font-weight:700}
+  .zone .zfoot{display:flex;align-items:center;gap:8px;font-size:11.5px;color:var(--faint);border-top:1px solid var(--line);padding-top:10px}
+  .pill{font-size:10px;font-weight:700;padding:2px 8px;border-radius:99px;border:1px solid var(--line2);color:var(--muted)}
+  .pill.warn{color:var(--gold);border-color:rgba(244,198,106,.4)}
+  .pill.tent{color:var(--doubt);border-color:rgba(157,180,255,.4)}
+  .zone .see{margin-left:auto;color:var(--accent);font-weight:700}
+  .zone .prog{font-family:var(--mono)}
+
+  /* slice panel */
+  .panel{background:var(--surface);border:1px solid var(--line2);border-radius:var(--r);padding:18px 20px;margin-top:14px;display:none}
+  .panel.show{display:block;animation:fade .25s}
+  @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+  .panel .ph{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+  .panel .ph .pn{font-family:var(--mono);font-size:11px;color:var(--accent);font-weight:700}
+  .panel .ph h3{font-size:16px;font-weight:800}
+  .panel .pdesc{font-size:13px;color:var(--muted);margin-bottom:14px}
+
+  table{width:100%;border-collapse:collapse;font-size:12.5px}
+  th{text-align:left;color:var(--faint);font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.04em;padding:7px 9px;border-bottom:1px solid var(--line2)}
+  td{padding:9px;border-bottom:1px solid var(--line);vertical-align:top;color:var(--text)}
+  tr:hover td{background:var(--surface2)}
+  .sc{font-family:var(--mono);font-weight:800;padding:1px 8px;border-radius:6px;display:inline-block;min-width:28px;text-align:center}
+  .sc.pos{color:var(--pos-ink);background:var(--pos1)} .sc.neg{color:var(--neg-ink);background:var(--neg1)}
+  .muted{color:var(--muted)} .faint{color:var(--faint)} .mono{font-family:var(--mono)}
+  .cohip{display:inline-block;font-size:10.5px;font-family:var(--mono);color:var(--muted);background:var(--surface2);border:1px solid var(--line2);padding:1px 6px;border-radius:5px;margin:2px 3px 0 0}
+
+  /* eval table */
+  .etbl td{vertical-align:middle}
+  .verds{display:flex;gap:4px}
+  .vbtn{font-size:11px;font-weight:700;border:1px solid var(--line2);background:var(--surface2);color:var(--muted);
+    padding:5px 9px;border-radius:7px;cursor:pointer;transition:.13s;white-space:nowrap}
+  .vbtn:hover{border-color:var(--faint);color:var(--text)}
+  .vbtn.on.ok{background:var(--ok);color:#06301c;border-color:var(--ok)}
+  .vbtn.on.fix{background:var(--fix);color:#3a2a05;border-color:var(--fix)}
+  .vbtn.on.doubt{background:var(--doubt);color:#10204a;border-color:var(--doubt)}
+  .note{width:100%;background:var(--bg2);border:1px solid var(--line2);color:var(--text);border-radius:7px;
+    padding:6px 9px;font-size:12px;font-family:var(--sans);resize:vertical;min-height:30px}
+  .note:focus{outline:none;border-color:var(--accent)}
+  .rowmark{font-size:10px;font-family:var(--mono);padding:1px 6px;border-radius:99px;border:1px solid var(--line2);color:var(--faint)}
+  .rowmark.ok{color:var(--ok);border-color:var(--ok)} .rowmark.fix{color:var(--fix);border-color:var(--fix)} .rowmark.doubt{color:var(--doubt);border-color:var(--doubt)}
+
+  /* dist bars */
+  .dist{display:flex;align-items:flex-end;gap:8px;height:130px;padding:0 4px}
+  .bar2{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;justify-content:flex-end;height:100%}
+  .bar2 .col{width:100%;border-radius:6px 6px 0 0;min-height:3px;transition:height .4s}
+  .bar2 .cnt{font-family:var(--mono);font-size:12px;font-weight:700}
+  .bar2 .lab{font-family:var(--mono);font-size:11px;color:var(--faint)}
+
+  .twocol{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px 18px}
+  .card h3{font-size:14px;font-weight:800;margin-bottom:4px}
+  .card .csub{font-size:12px;color:var(--muted);margin-bottom:14px}
+
+  .kv{display:flex;justify-content:space-between;font-size:12.5px;padding:6px 0;border-bottom:1px dashed var(--line)}
+  .kv .k{color:var(--muted)} .kv .v{font-family:var(--mono);font-weight:700}
+
+  /* export bar */
+  .exbar{position:fixed;bottom:0;left:0;right:0;z-index:40;backdrop-filter:blur(14px);
+    background:linear-gradient(0deg,rgba(10,12,16,.96),rgba(10,12,16,.8));border-top:1px solid var(--line2)}
+  .exin{max-width:1180px;margin:0 auto;padding:11px 22px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+  .exin .stat{font-size:12.5px;color:var(--muted)}
+  .exin .stat b{color:var(--text);font-family:var(--mono)}
+  .btn{font-size:13px;font-weight:800;border:1px solid var(--line2);background:var(--surface2);color:var(--text);
+    padding:9px 16px;border-radius:9px;cursor:pointer;transition:.14s}
+  .btn:hover{border-color:var(--faint)}
+  .btn.primary{background:var(--gold);color:#2c2104;border-color:var(--gold)}
+  .btn.primary:hover{filter:brightness(1.06)}
+  .btn.ghost{background:transparent}
+  .exin .sp{margin-left:auto}
+
+  .toast{position:fixed;bottom:78px;left:50%;transform:translateX(-50%) translateY(20px);opacity:0;pointer-events:none;
+    background:var(--surface2);border:1px solid var(--accent-dim);color:var(--text);padding:11px 18px;border-radius:10px;
+    font-size:13px;font-weight:600;transition:.28s;z-index:60;box-shadow:0 12px 40px rgba(0,0,0,.5);max-width:90vw;text-align:center}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+  .foot{margin-top:34px;text-align:center;font-size:11px;color:var(--faint);font-family:var(--mono)}
+  @media(max-width:760px){.twocol{grid-template-columns:1fr}.lede{padding-top:20px}
+    .etbl .hide-m{display:none}}
+</style>
+</head>
+<body>
+<header>
+  <div class="hbar">
+    <div class="brand">
+      <span class="kicker">바사해 · 태봉호팀 — 데모 평가</span>
+      <h1><span class="dot"></span>평가 대시보드</h1>
+    </div>
+    <nav class="nav">
+      <a href="index.html">히트맵</a>
+      <a class="on" href="dashboard.html">평가 대시보드</a>
+    </nav>
+    <span class="dday">데모데이 D-5 · 6/20 09:00</span>
+  </div>
+</header>
+
+<div class="wrap">
+  <section class="lede">
+    <h2>데모 v1을 <span style="color:var(--gold)">평가 → 수정</span> 루프로 돌리는 화면</h2>
+    <p>모든 점수는 <b style="color:var(--text)">AI 샘플(검수 전)</b>입니다. 각자 자기 <b style="color:var(--text)">구역</b>을 골라 데이터를 보고, 아래 표에서 셀마다 <b style="color:var(--ok)">맞음</b>/<b style="color:var(--fix)">수정</b>/<b style="color:var(--doubt)">의문</b>을 찍고 메모하세요. 다 하면 <b style="color:var(--gold)">피드백 내보내기</b>로 복사 → 팀 텔레그램에 붙여넣으면 봇이 모아 v2에 반영합니다. (체크는 이 브라우저에 자동 저장)</p>
+  </section>
+
+  <div class="sectit">한눈에 — 지금 데이터</div>
+  <div class="kpis" id="kpis"></div>
+
+  <div class="sectit">나는 누구? — 평가자 선택</div>
+  <div class="who">
+    <span class="lbl">현재 평가자:</span>
+    <span id="whochips" style="display:flex;gap:7px;flex-wrap:wrap"></span>
+  </div>
+
+  <div class="sectit">평가 구역 — 6명 (eval-board)</div>
+  <div class="zones" id="zones"></div>
+  <div class="panel" id="panel"></div>
+
+  <div class="sectit">점수 평가 표 — 14개 셀 (핵심 작업)</div>
+  <div class="card" style="padding:8px 10px"><div style="overflow-x:auto">
+    <table class="etbl"><thead><tr>
+      <th>정책</th><th>업종</th><th>점수</th><th class="hide-m">근거 (AI 초안)</th><th>내 판정</th><th>메모(수정안)</th>
+    </tr></thead><tbody id="etbody"></tbody></table>
+  </div></div>
+
+  <div class="sectit">분석 — 분포 · 업종 집계</div>
+  <div class="twocol">
+    <div class="card">
+      <h3>점수 분포</h3><p class="csub">−3(강한 피해) ~ +3(강한 수혜) 셀 개수. 한쪽으로 쏠리면 척도·매핑 점검 신호.</p>
+      <div class="dist" id="dist"></div>
+    </div>
+    <div class="card">
+      <h3>업종별 평균 임팩트 <span class="faint mono" style="font-size:11px">(6구역 집계모델 초안)</span></h3>
+      <p class="csub">기업 점수 → 업종 점수 집계는 김귀선 구역에서 정의. 지금은 단순 평균.</p>
+      <div id="rollup"></div>
+    </div>
+  </div>
+
+  <p class="foot">정책 8 · 업종 7 · 평가셀 14 — v1 샘플 · 평가 대시보드 · <a href="index.html">← 히트맵</a></p>
+</div>
+
+<div class="exbar">
+  <div class="exin">
+    <span class="stat">평가자 <b id="exwho">미선택</b></span>
+    <span class="stat">진행 <b id="exprog">0/14</b></span>
+    <div class="bar" style="width:120px;height:6px;background:var(--surface2);border-radius:99px;overflow:hidden">
+      <i id="exbarfill" style="display:block;height:100%;width:0;background:var(--gold);border-radius:99px;transition:width .4s"></i>
+    </div>
+    <div class="sp"></div>
+    <button class="btn ghost" onclick="resetMine()">내 평가 초기화</button>
+    <button class="btn primary" onclick="exportFeedback()">📋 피드백 내보내기 (복사)</button>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script src="data.js"></script>
+<script>
+const D = window.DEMO;
+const KEY = "pih-eval-v1";
+
+// flatten impact cells
+const CELLS = [];
+D.policies.forEach(p=>p.impacts.forEach(im=>{
+  CELLS.push({id:p.n+"|"+im.s, pn:p.n, pshort:p.short, ptitle:p.title, sector:im.s, v:im.v, reason:im.reason, cos:im.cos});
+}));
+
+// state
+let state = load();
+function load(){ try{ return JSON.parse(localStorage.getItem(KEY)) || {evaluator:null,marks:{}}; }catch(e){ return {evaluator:null,marks:{}}; } }
+function save(){ localStorage.setItem(KEY, JSON.stringify(state)); }
+
+const sign=v=>v>0?"+":"";
+const scClass=v=>v>0?"pos":"neg";
+
+/* ---------- KPI ---------- */
+function renderKPI(){
+  const pos=CELLS.filter(c=>c.v>0).length, neg=CELLS.filter(c=>c.v<0).length;
+  const avg=(CELLS.reduce((a,c)=>a+Math.abs(c.v),0)/CELLS.length).toFixed(2);
+  const marked=Object.keys(state.marks).filter(k=>state.marks[k].verdict).length;
+  const pct=Math.round(marked/CELLS.length*100);
+  document.getElementById("kpis").innerHTML = `
+   <div class="kpi"><div class="n">${D.policies.length}</div><div class="l">정책 / 규제</div><div class="sub">${D.sectors.length}개 업종 매핑</div></div>
+   <div class="kpi"><div class="n">${CELLS.length}</div><div class="l">평가 셀 (정책×업종)</div><div class="sub">전부 도메인 검수 전</div></div>
+   <div class="kpi"><div class="n" style="color:var(--pos-ink)">${pos}<span class="faint" style="font-size:15px"> / </span><span style="color:var(--neg-ink)">${neg}</span></div><div class="l">수혜(+) / 피해(−)</div><div class="sub">평균 강도 |${avg}|</div></div>
+   <div class="kpi hot"><div class="n">${pct}<span style="font-size:16px">%</span></div><div class="l">내 평가 진행률</div><div class="bar"><i style="width:${pct}%"></i></div><div class="sub">${marked}/${CELLS.length} 셀 판정</div></div>`;
+}
+
+/* ---------- evaluator chips ---------- */
+function renderWho(){
+  document.getElementById("whochips").innerHTML = D.zones.map(z=>
+    `<span class="mchip ${state.evaluator===z.member?'on':''}" onclick="pick('${z.member}')">${z.member}</span>`).join("");
+  document.getElementById("exwho").textContent = state.evaluator || "미선택";
+}
+function pick(m){
+  state.evaluator = (state.evaluator===m? null : m); save();
+  renderWho(); renderZones();
+  if(state.evaluator){ const z=D.zones.find(x=>x.member===m); openPanel(z.id); }
+  else { document.getElementById("panel").classList.remove("show"); }
+}
+
+/* ---------- zone cards ---------- */
+function renderZones(){
+  document.getElementById("zones").innerHTML = D.zones.map((z,i)=>{
+    const tags=[]; if(z.warn)tags.push(`<span class="pill warn">⚠ ${z.warn}</span>`); if(z.tentative)tags.push(`<span class="pill tent">잠정</span>`);
+    const active = state.evaluator===z.member;
+    return `<div class="zone ${active?'active':''}" onclick="openPanel('${z.id}')">
+      <div class="zt"><span class="zn">${i+1}구역</span><h4>${z.member}</h4>${tags.join("")}</div>
+      <div class="role">${z.role}</div>
+      <ul class="qs">${z.q.map(q=>`<li>${q}</li>`).join("")}</ul>
+      <div class="zfoot"><span class="pill">데이터: ${sliceName(z.slice)}</span><span class="see">내 데이터 보기 →</span></div>
+    </div>`;}).join("");
+}
+function sliceName(s){return {schema:"전체 스키마",scores:"점수 14셀",mapping:"정책→기업 매핑",vertical:"vertical 커버리지",qa:"QA 체크리스트",rollup:"업종 집계"}[s]||s;}
+
+/* ---------- slice panels ---------- */
+function openPanel(zid){
+  const z=D.zones.find(x=>x.id===zid); const p=document.getElementById("panel");
+  document.querySelectorAll(".zone").forEach((el,i)=>el.classList.toggle("active", D.zones[i].member===z.member));
+  p.innerHTML = `<div class="ph"><span class="pn">${z.id.toUpperCase()} · ${z.member}</span><h3>${sliceName(z.slice)}</h3></div>
+    <p class="pdesc">${z.role} — 이 데이터를 보고 평가 표에 반영하세요.</p>${sliceBody(z.slice)}`;
+  p.classList.add("show"); p.scrollIntoView({behavior:"smooth",block:"nearest"});
+}
+function coChips(cos){return cos.map(c=>`<span class="cohip">${c}</span>`).join("");}
+
+function sliceBody(slice){
+  if(slice==="schema"){
+    return `<div class="kv"><span class="k">정책 객체</span><span class="v">${D.policies.length} { n,title,date,src,cat,status,summary,changes[],impacts[] }</span></div>
+      <div class="kv"><span class="k">impact 셀</span><span class="v">${CELLS.length} { s(업종), v(−3~+3), reason, cos[] }</span></div>
+      <div class="kv"><span class="k">업종 축</span><span class="v">${D.sectors.length}</span></div>
+      <div class="kv"><span class="k">데이터 소스</span><span class="v">data.js (단일 소스 → 히트맵·대시보드 공유)</span></div>
+      <p class="pdesc" style="margin-top:14px">평가 포인트: ① 멤버는 <b style="color:var(--text)">v(점수)·reason만 고치면</b> 반영되는 구조 (사람=Eval, 코딩=AI). ② 자동 루프(수집→추출→점수화)로 갈 때 이 스키마면 충분한가? ③ 배포 링크는 GitHub Pages로 라이브.</p>`;
+  }
+  if(slice==="scores"){
+    const rows=[...CELLS].sort((a,b)=>Math.abs(b.v)-Math.abs(a.v)).map(c=>
+      `<tr><td class="mono faint">${c.pn}</td><td>${c.pshort}</td><td>${c.sector}</td><td><span class="sc ${scClass(c.v)}">${sign(c.v)}${c.v}</span></td></tr>`).join("");
+    return `<p class="pdesc">강도순. 척도(−3~+3 한 축)가 충분한지, 재무적으로 타당한지 검수. 틀린 점수는 아래 평가 표에서 <b style="color:var(--fix)">수정</b>.</p>
+      <table><thead><tr><th>P</th><th>정책</th><th>업종</th><th>점수</th></tr></thead><tbody>${rows}</tbody></table>`;
+  }
+  if(slice==="mapping"){
+    const rows=D.policies.map(p=>`<tr><td class="mono faint">${p.n}</td><td>${p.short}</td>
+      <td>${p.impacts.map(im=>`<div style="margin-bottom:6px"><b>${im.s}</b> <span class="sc ${scClass(im.v)}" style="font-size:11px">${sign(im.v)}${im.v}</span><br>${coChips(im.cos)}</div>`).join("")}</td></tr>`).join("");
+    return `<p class="pdesc">정책별 영향 업종·기업. <b style="color:var(--text)">빠진 수혜/피해 대상</b>이나 오매핑은 평가 표에서 의문/수정 + 메모.</p>
+      <table><thead><tr><th>P</th><th>정책</th><th>영향 업종 · 기업</th></tr></thead><tbody>${rows}</tbody></table>`;
+  }
+  if(slice==="vertical"){
+    const cov=D.sectors.map(s=>{const cs=CELLS.filter(c=>c.sector===s);return {s,n:cs.length,sum:cs.reduce((a,c)=>a+c.v,0)};}).sort((a,b)=>b.n-a.n);
+    const rows=cov.map(r=>`<tr><td>${r.s}</td><td class="mono">${r.n}</td><td class="mono ${r.sum>=0?'':''}" style="color:${r.sum>0?'var(--pos-ink)':r.sum<0?'var(--neg-ink)':'var(--faint)'}">${sign(r.sum)}${r.sum}</td></tr>`).join("");
+    return `<p class="pdesc">업종별 정책 커버 수. <b style="color:var(--text)">1개 vertical을 깊게</b> 가려면 어디가 얕은지 확인. 정책 소스 URL과 정답셋 시드는 출국(6/19) 전 박제.</p>
+      <table><thead><tr><th>업종</th><th>정책 수</th><th>합산 임팩트</th></tr></thead><tbody>${rows}</tbody></table>`;
+  }
+  if(slice==="qa"){
+    const items=["처음 보는 사람이 3초 안에 '뭐 하는 화면'인지 이해되는가","타깃 사용자가 누구이고 왜 쓰는지 한 줄로 나오는가","히트맵 셀/정책 클릭 인터랙션이 직관적인가","모바일 화면에서 표·드로어가 깨지지 않는가","'AI 샘플·검수 전' 고지가 충분히 보이는가","색(수혜 초록 / 피해 빨강)이 직관적인가"];
+    return `<p class="pdesc">사용자 경험·가치·QA 체크. 깨지는 곳은 평가 표 메모 또는 텔레그램으로. <a href="index.html" target="_blank">히트맵 새 탭으로 열기 ↗</a></p>
+      <table><tbody>${items.map(it=>`<tr><td style="width:24px" class="mono faint">□</td><td>${it}</td></tr>`).join("")}</tbody></table>`;
+  }
+  if(slice==="rollup"){
+    return `<p class="pdesc">기업 점수 → 업종 점수 집계 규칙을 정의. 아래 '업종별 평균 임팩트'는 단순평균 초안. 가중/정규화 방식을 제안하면 봇이 모델에 반영.</p>
+      <div class="kv"><span class="k">현재 집계</span><span class="v">업종별 단순 평균 (셀 v의 mean)</span></div>
+      <div class="kv"><span class="k">정해야 할 것</span><span class="v">강도 vs 확신도 분리 · 기업 가중 · 정규화</span></div>
+      <div class="kv"><span class="k">피드백 기록</span><span class="v">이 표 + 텔레그램 → 봇 harvest → v2</span></div>`;
+  }
+  return "";
+}
+
+/* ---------- eval table ---------- */
+function renderTable(){
+  document.getElementById("etbody").innerHTML = CELLS.map(c=>{
+    const mk=state.marks[c.id]||{};
+    const vb=(v,lbl)=>`<button class="vbtn ${v} ${mk.verdict===v?'on':''}" onclick="setVerdict('${c.id}','${v}')">${lbl}</button>`;
+    return `<tr>
+      <td><span class="mono faint">${c.pn}</span> ${c.pshort}</td>
+      <td>${c.sector}</td>
+      <td><span class="sc ${scClass(c.v)}">${sign(c.v)}${c.v}</span></td>
+      <td class="hide-m muted" style="max-width:300px">${c.reason}<div style="margin-top:4px">${coChips(c.cos)}</div></td>
+      <td><div class="verds">${vb('ok','맞음')}${vb('fix','수정')}${vb('doubt','의문')}</div></td>
+      <td><textarea class="note" placeholder="수정안 / 근거..." onchange="setNote('${c.id}',this.value)">${(mk.note||"").replace(/</g,'&lt;')}</textarea></td>
+    </tr>`;}).join("");
+}
+function setVerdict(id,v){
+  const m=state.marks[id]||{}; m.verdict=(m.verdict===v?null:v); state.marks[id]=m; save();
+  renderTable(); renderKPI(); renderExport();
+}
+function setNote(id,val){ const m=state.marks[id]||{}; m.note=val; state.marks[id]=m; save(); renderExport(); }
+
+/* ---------- analytics ---------- */
+function renderDist(){
+  const buckets={"-3":0,"-2":0,"-1":0,"1":0,"2":0,"3":0};
+  CELLS.forEach(c=>buckets[String(c.v)]++);
+  const order=["-3","-2","-1","1","2","3"];
+  const max=Math.max(...Object.values(buckets),1);
+  document.getElementById("dist").innerHTML = order.map(k=>{
+    const v=buckets[k], h=Math.round(v/max*100), neg=k[0]==="-";
+    const col=neg?`var(--neg${k[1]})`:`var(--pos${k})`;
+    const ink=neg?"var(--neg-ink)":"var(--pos-ink)";
+    return `<div class="bar2"><div class="cnt" style="color:${ink}">${v}</div>
+      <div class="col" style="height:${h}%;background:${col}"></div>
+      <div class="lab">${k>0?'+'+k:k}</div></div>`;}).join("");
+}
+function renderRollup(){
+  const rows=D.sectors.map(s=>{const cs=CELLS.filter(c=>c.sector===s);
+    const avg=cs.length?cs.reduce((a,c)=>a+c.v,0)/cs.length:0; return {s,n:cs.length,avg};})
+    .sort((a,b)=>b.avg-a.avg);
+  document.getElementById("rollup").innerHTML = rows.map(r=>{
+    const w=Math.round(Math.abs(r.avg)/3*100), pos=r.avg>=0;
+    return `<div style="display:flex;align-items:center;gap:10px;padding:5px 0">
+      <span style="width:120px;font-size:12px">${r.s}</span>
+      <div style="flex:1;height:8px;background:var(--surface2);border-radius:99px;overflow:hidden;display:flex;justify-content:${pos?'flex-start':'flex-end'}">
+        <i style="display:block;height:100%;width:${w}%;background:${pos?'var(--pos3)':'var(--neg3)'};border-radius:99px"></i></div>
+      <span class="mono" style="width:42px;text-align:right;color:${pos?'var(--pos-ink)':'var(--neg-ink)'};font-weight:700">${r.avg>0?'+':''}${r.avg.toFixed(1)}</span>
+      <span class="faint mono" style="width:24px;font-size:11px">${r.n}셀</span>
+    </div>`;}).join("");
+}
+
+/* ---------- export ---------- */
+function renderExport(){
+  const marked=Object.values(state.marks).filter(m=>m.verdict).length;
+  document.getElementById("exprog").textContent = marked+"/"+CELLS.length;
+  document.getElementById("exbarfill").style.width = Math.round(marked/CELLS.length*100)+"%";
+}
+function exportFeedback(){
+  const who=state.evaluator||"(평가자 미선택)";
+  const d=new Date(); const ymd=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+  const lbl={ok:"✅ 맞음",fix:"✏️ 수정필요",doubt:"❓ 의문"};
+  const lines=[];
+  CELLS.forEach(c=>{ const m=state.marks[c.id]; if(m&&(m.verdict||m.note)){
+    lines.push(`- ${c.pn} ${c.pshort} × ${c.sector} (현재 ${sign(c.v)}${c.v}) → ${m.verdict?lbl[m.verdict]:"메모"}${m.note?` · ${m.note}`:""}`);
+  }});
+  if(!lines.length){ toast("아직 판정/메모한 셀이 없어요. 표에서 맞음/수정/의문을 찍어주세요."); return; }
+  const md=`📋 데모 평가 피드백 — ${who} · ${ymd}\n(진행 ${lines.length}/${CELLS.length}셀)\n\n${lines.join("\n")}\n\n#정책히트맵 #eval`;
+  copy(md);
+}
+function copy(text){
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).then(()=>toast("✅ 복사됐어요! 팀 텔레그램에 붙여넣으면 봇이 모아 v2에 반영합니다."),()=>fallback(text));
+  } else fallback(text);
+}
+function fallback(text){
+  const ta=document.createElement("textarea"); ta.value=text; document.body.appendChild(ta); ta.select();
+  try{document.execCommand("copy");toast("✅ 복사됐어요! 텔레그램에 붙여넣기.");}catch(e){toast("복사 실패 — 길게 눌러 직접 복사하세요.");}
+  document.body.removeChild(ta);
+}
+function resetMine(){ if(confirm("내 평가(판정·메모)를 모두 지울까요?")){ state.marks={}; save(); renderTable();renderKPI();renderExport(); toast("초기화했어요."); } }
+
+let tt;
+function toast(msg){ const t=document.getElementById("toast"); t.textContent=msg; t.classList.add("show"); clearTimeout(tt); tt=setTimeout(()=>t.classList.remove("show"),3400); }
+
+/* ---------- init ---------- */
+renderKPI(); renderWho(); renderZones(); renderTable(); renderDist(); renderRollup(); renderExport();
+if(state.evaluator){ const z=D.zones.find(x=>x.member===state.evaluator); if(z) openPanel(z.id); }
+</script>
+</body>
+</html>

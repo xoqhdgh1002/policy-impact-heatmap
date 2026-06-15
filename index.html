@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>정책 임팩트 — 수혜/피해 히트맵 · MVP</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" rel="stylesheet" media="print" onload="this.media='all'">
+<noscript><link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" rel="stylesheet"></noscript>
+<style>
+  :root{
+    --bg:#0a0c10; --bg2:#0f1218; --surface:#141821; --surface2:#1b212c;
+    --line:#262d3a; --line2:#333b4a;
+    --text:#e8eaef; --muted:#9aa3b4; --faint:#646d7e;
+    --accent:#34c3d4; --accent-dim:#1d6b75;
+    --pos1:hsl(154 42% 18%); --pos2:hsl(154 50% 25%); --pos3:hsl(154 58% 33%);
+    --neg1:hsl(4 44% 21%); --neg2:hsl(4 56% 30%); --neg3:hsl(4 66% 39%);
+    --pos-ink:#7ff0b6; --neg-ink:#ff9b93;
+    --r:14px; --rs:9px;
+    --mono:"SFMono-Regular",ui-monospace,"JetBrains Mono",Menlo,Consolas,monospace;
+    --sans:"Pretendard","Pretendard Variable",system-ui,-apple-system,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    font-family:var(--sans); background:var(--bg); color:var(--text);
+    line-height:1.5; -webkit-font-smoothing:antialiased;
+    background-image:radial-gradient(900px 500px at 88% -8%, rgba(52,195,212,.07), transparent 60%),
+                     radial-gradient(700px 400px at 5% 0%, rgba(124,240,182,.04), transparent 55%);
+    min-height:100vh;
+  }
+  .wrap{max-width:1180px;margin:0 auto;padding:0 22px 90px}
+
+  /* ---- header ---- */
+  header{position:sticky;top:0;z-index:30;backdrop-filter:blur(14px);
+    background:linear-gradient(180deg,rgba(10,12,16,.92),rgba(10,12,16,.7));
+    border-bottom:1px solid var(--line)}
+  .hbar{max-width:1180px;margin:0 auto;padding:14px 22px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+  .brand{display:flex;flex-direction:column;gap:2px;margin-right:auto}
+  .brand .kicker{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent);font-weight:700}
+  .brand h1{font-size:19px;font-weight:800;letter-spacing:-.02em;display:flex;align-items:center;gap:9px}
+  .brand h1 .dot{width:8px;height:8px;border-radius:50%;background:var(--accent);box-shadow:0 0 14px var(--accent)}
+  .nav{display:flex;gap:6px}
+  .nav a{font-size:12.5px;font-weight:700;text-decoration:none;color:var(--muted);background:var(--surface);
+    border:1px solid var(--line2);padding:7px 13px;border-radius:99px;transition:.15s}
+  .nav a:hover{color:var(--text);border-color:var(--faint)}
+  .nav a.on{color:var(--bg);background:var(--accent);border-color:var(--accent)}
+  .dday{font-family:var(--mono);font-size:12px;color:var(--muted);border:1px solid var(--line2);
+    padding:5px 10px;border-radius:99px;background:var(--surface)}
+  .disclaimer{font-size:11.5px;color:var(--faint);max-width:340px;line-height:1.35}
+  .disclaimer b{color:var(--muted)}
+
+  /* ---- hero strip ---- */
+  .lede{padding:30px 0 18px;display:flex;flex-direction:column;gap:10px}
+  .lede h2{font-size:clamp(22px,2.6vw,32px);font-weight:800;letter-spacing:-.025em;line-height:1.18}
+  .lede h2 .hl{color:var(--pos-ink)}
+  .lede h2 .hl.neg{color:var(--neg-ink)}
+  .lede p{color:var(--muted);max-width:660px;font-size:14.5px}
+
+  /* ---- toolbar ---- */
+  .toolbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:18px 0 14px;
+    padding:12px 14px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r)}
+  .toolbar .lbl{font-size:12px;color:var(--faint);font-weight:600;margin-right:2px}
+  .chip{font-size:12.5px;font-weight:600;color:var(--muted);background:var(--surface2);
+    border:1px solid var(--line2);padding:7px 13px;border-radius:99px;cursor:pointer;transition:.16s}
+  .chip:hover{color:var(--text);border-color:var(--faint)}
+  .chip.on{color:var(--bg);background:var(--accent);border-color:var(--accent)}
+  .chip.on.pos{background:var(--pos-ink)}
+  .chip.on.neg{background:var(--neg-ink)}
+  .spacer{margin-left:auto}
+  .scale{display:flex;align-items:center;gap:3px;font-family:var(--mono);font-size:10.5px;color:var(--faint)}
+  .scale i{width:17px;height:14px;border-radius:3px;display:inline-block}
+
+  /* ---- heatmap ---- */
+  .board{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+  .grid{display:grid;grid-template-columns:168px repeat(8,1fr);min-width:760px}
+  .gridscroll{overflow-x:auto}
+  .gh{position:sticky;top:0;background:var(--bg2);border-bottom:1px solid var(--line2);
+    padding:10px 8px;font-size:11px;font-weight:700;color:var(--muted);text-align:center;cursor:pointer;
+    line-height:1.25;transition:.15s}
+  .gh:hover{color:var(--text);background:var(--surface2)}
+  .gh .pn{font-family:var(--mono);font-size:10px;color:var(--accent);display:block;margin-bottom:2px}
+  .gh.corner{position:sticky;left:0;z-index:5;text-align:left;cursor:default;color:var(--faint);
+    font-size:11px;font-weight:600;display:flex;align-items:flex-end}
+  .rowlab{position:sticky;left:0;z-index:4;background:var(--surface);border-right:1px solid var(--line2);
+    border-bottom:1px solid var(--line);padding:0 12px;display:flex;align-items:center;
+    font-size:13px;font-weight:700;min-height:60px}
+  .cell{border-bottom:1px solid var(--line);border-right:1px solid rgba(255,255,255,.02);
+    min-height:60px;display:flex;align-items:center;justify-content:center;cursor:pointer;
+    position:relative;transition:.14s;background:transparent}
+  .cell .v{font-family:var(--mono);font-size:15px;font-weight:700}
+  .cell.na{cursor:default}
+  .cell.na .v{color:#2c3340;font-size:12px}
+  .cell:not(.na):hover{transform:scale(1.04);z-index:2;box-shadow:inset 0 0 0 2px var(--accent)}
+  .cell.p1{background:var(--pos1)} .cell.p2{background:var(--pos2)} .cell.p3{background:var(--pos3)}
+  .cell.n1{background:var(--neg1)} .cell.n2{background:var(--neg2)} .cell.n3{background:var(--neg3)}
+  .cell.p1 .v,.cell.p2 .v,.cell.p3 .v{color:var(--pos-ink)}
+  .cell.n1 .v,.cell.n2 .v,.cell.n3 .v{color:var(--neg-ink)}
+  .cell .seed{position:absolute;top:5px;right:6px;font-size:8.5px;color:rgba(255,255,255,.4)}
+  body.f-pos .cell.n1,body.f-pos .cell.n2,body.f-pos .cell.n3,
+  body.f-neg .cell.p1,body.f-neg .cell.p2,body.f-neg .cell.p3{opacity:.12;filter:saturate(.2)}
+
+  /* ---- policy legend ---- */
+  .legend{margin-top:18px;display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px}
+  .pcard{background:var(--surface);border:1px solid var(--line);border-radius:var(--rs);padding:13px 14px;
+    cursor:pointer;transition:.16s;display:flex;flex-direction:column;gap:6px}
+  .pcard:hover{border-color:var(--accent-dim);transform:translateY(-2px)}
+  .pcard .ptop{display:flex;align-items:center;gap:8px}
+  .pcard .pn{font-family:var(--mono);font-size:11px;font-weight:700;color:var(--accent)}
+  .pcard .pstatus{font-size:10px;color:var(--faint);margin-left:auto;border:1px solid var(--line2);
+    padding:2px 7px;border-radius:99px}
+  .pcard h4{font-size:13.5px;font-weight:700;letter-spacing:-.01em}
+  .pcard .pmeta{font-size:11.5px;color:var(--faint)}
+
+  /* ---- drawer ---- */
+  .scrim{position:fixed;inset:0;background:rgba(5,7,10,.6);backdrop-filter:blur(3px);opacity:0;
+    pointer-events:none;transition:.25s;z-index:40}
+  .scrim.open{opacity:1;pointer-events:auto}
+  .drawer{position:fixed;top:0;right:0;height:100%;width:min(460px,94vw);background:var(--bg2);
+    border-left:1px solid var(--line2);z-index:50;transform:translateX(100%);transition:transform .3s cubic-bezier(.16,1,.3,1);
+    display:flex;flex-direction:column;box-shadow:-30px 0 60px rgba(0,0,0,.5)}
+  .drawer.open{transform:none}
+  .dhead{padding:20px 22px 16px;border-bottom:1px solid var(--line)}
+  .dhead .dn{font-family:var(--mono);font-size:11px;color:var(--accent);font-weight:700}
+  .dhead h3{font-size:18px;font-weight:800;letter-spacing:-.02em;margin:5px 0 9px;line-height:1.25}
+  .dhead .tags{display:flex;gap:6px;flex-wrap:wrap}
+  .tag{font-size:10.5px;color:var(--muted);background:var(--surface2);border:1px solid var(--line2);
+    padding:3px 9px;border-radius:99px;font-family:var(--mono)}
+  .dclose{position:absolute;top:16px;right:18px;background:var(--surface2);border:1px solid var(--line2);
+    color:var(--muted);width:30px;height:30px;border-radius:8px;cursor:pointer;font-size:15px;line-height:1}
+  .dclose:hover{color:var(--text);border-color:var(--faint)}
+  .dbody{padding:18px 22px;overflow-y:auto;flex:1}
+  .dsec{margin-bottom:20px}
+  .dsec .dt{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);font-weight:700;margin-bottom:8px}
+  .dsec p{font-size:13.5px;color:var(--text);line-height:1.6}
+  .chgs{display:flex;flex-direction:column;gap:6px}
+  .chgs li{list-style:none;font-size:13px;color:var(--muted);padding-left:16px;position:relative}
+  .chgs li:before{content:"▸";position:absolute;left:0;color:var(--accent)}
+  .impact{background:var(--surface);border:1px solid var(--line);border-radius:var(--rs);padding:12px 13px;margin-bottom:9px}
+  .impact.hot{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent-dim)}
+  .impact .itop{display:flex;align-items:center;gap:9px;margin-bottom:6px}
+  .impact .sname{font-size:13.5px;font-weight:700}
+  .score{font-family:var(--mono);font-weight:700;font-size:13px;padding:2px 9px;border-radius:7px;margin-left:auto}
+  .score.pos{color:var(--pos-ink);background:var(--pos1)}
+  .score.neg{color:var(--neg-ink);background:var(--neg1)}
+  .impact .reason{font-size:12.5px;color:var(--muted);line-height:1.55;margin-bottom:8px}
+  .cos{display:flex;flex-wrap:wrap;gap:5px}
+  .co{font-size:11px;font-family:var(--mono);color:var(--muted);background:var(--surface2);
+    border:1px solid var(--line2);padding:2px 8px;border-radius:6px}
+  .evalrow{display:flex;align-items:center;gap:7px;margin-top:9px;padding-top:9px;border-top:1px dashed var(--line2);
+    font-size:11.5px;color:var(--faint)}
+  .evalrow b{color:#f4c66a}
+
+  /* ---- loop footer ---- */
+  .loop{margin-top:42px;padding:26px 22px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r)}
+  .loop h3{font-size:14px;font-weight:800;letter-spacing:-.01em;margin-bottom:4px}
+  .loop .sub{font-size:12.5px;color:var(--muted);margin-bottom:18px}
+  .steps{display:flex;align-items:stretch;gap:8px;flex-wrap:wrap}
+  .step{flex:1;min-width:120px;background:var(--bg2);border:1px solid var(--line2);border-radius:var(--rs);padding:13px}
+  .step .si{font-family:var(--mono);font-size:11px;color:var(--accent);font-weight:700}
+  .step h5{font-size:13px;font-weight:700;margin:5px 0 4px}
+  .step p{font-size:11.5px;color:var(--faint);line-height:1.45}
+  .step.eval{border-color:#f4c66a55;background:linear-gradient(180deg,rgba(244,198,106,.06),transparent)}
+  .step.eval .si{color:#f4c66a}
+  .arrow{align-self:center;color:var(--faint);font-size:16px}
+  .foot{margin-top:22px;text-align:center;font-size:11px;color:var(--faint);font-family:var(--mono)}
+  .foot a{color:var(--muted)}
+  @media(max-width:720px){
+    .disclaimer{display:none}.arrow{display:none}.lede{padding-top:22px}
+  }
+</style>
+</head>
+<body class="f-all">
+<header>
+  <div class="hbar">
+    <div class="brand">
+      <span class="kicker">바사해 · 태봉호팀 — 아이디어 A</span>
+      <h1><span class="dot"></span>정책 임팩트 히트맵</h1>
+    </div>
+    <nav class="nav">
+      <a class="on" href="index.html">히트맵</a>
+      <a href="dashboard.html">평가 대시보드</a>
+    </nav>
+    <span class="dday" id="dday">데모데이 D-5 · 6/20 09:00</span>
+    <p class="disclaimer"><b>MVP 데모.</b> 점수는 AI가 만든 <b>샘플 초안(도메인 검수 전)</b>입니다. 투자 판단 근거가 아니라, 도메인 멤버가 Eval을 채워 넣을 '뼈대'를 보여주는 프로토타입입니다.</p>
+  </div>
+</header>
+
+<div class="wrap">
+  <section class="lede">
+    <h2>새 정책 한 건이 <span class="hl">어디에 호재</span>, <span class="hl neg">어디에 악재</span>인지<br>한 장의 히트맵으로.</h2>
+    <p>정책·규제 원문을 수집 → 핵심 변화점을 추출 → 영향받는 업종·기업을 −3~+3으로 점수화합니다. 셀이나 정책을 누르면 <b style="color:var(--text)">왜 그 점수인지</b> 근거와 대상 기업이 펼쳐집니다. 점수를 평가·수정하려면 <a href="dashboard.html" style="color:var(--accent)">평가 대시보드</a>로.</p>
+  </section>
+
+  <div class="toolbar">
+    <span class="lbl">필터</span>
+    <button class="chip on" data-f="all" onclick="setFilter('all',this)">전체</button>
+    <button class="chip" data-f="pos" onclick="setFilter('pos',this)">수혜만</button>
+    <button class="chip" data-f="neg" onclick="setFilter('neg',this)">피해만</button>
+    <div class="spacer"></div>
+    <div class="scale">
+      <span>피해</span>
+      <i style="background:var(--neg3)"></i><i style="background:var(--neg2)"></i><i style="background:var(--neg1)"></i>
+      <i style="background:#20262f"></i>
+      <i style="background:var(--pos1)"></i><i style="background:var(--pos2)"></i><i style="background:var(--pos3)"></i>
+      <span>수혜</span>
+    </div>
+  </div>
+
+  <div class="board">
+    <div class="gridscroll">
+      <div class="grid" id="grid"></div>
+    </div>
+  </div>
+
+  <div class="legend" id="legend"></div>
+
+  <section class="loop">
+    <h3>이 화면 뒤의 핵심 루프 — 제품의 본질</h3>
+    <p class="sub">기능이 아니라 <b style="color:var(--muted)">생성 → 평가 → 개선</b> 루프가 제품입니다. 차별화는 ⑤ Eval에서 나옵니다.</p>
+    <div class="steps">
+      <div class="step"><span class="si">01</span><h5>수집</h5><p>정책·규제 원문 (법제처·보도자료·뉴스)</p></div>
+      <div class="arrow">→</div>
+      <div class="step"><span class="si">02</span><h5>추출</h5><p>요약·핵심 변화점 — AI</p></div>
+      <div class="arrow">→</div>
+      <div class="step"><span class="si">03</span><h5>점수화</h5><p>영향 업종·기업 + 수혜/피해 강도 — AI+룰</p></div>
+      <div class="arrow">→</div>
+      <div class="step"><span class="si">04</span><h5>표시</h5><p>이 히트맵</p></div>
+      <div class="arrow">→</div>
+      <div class="step eval"><span class="si">05</span><h5>Eval ★</h5><p>도메인 멤버가 <a href="dashboard.html" style="color:#f4c66a">평가 대시보드</a>에서 정답셋과 대조 → 룰 개선 → 루프 반복</p></div>
+    </div>
+  </section>
+
+  <p class="foot">정책 8건 · 업종 7개 — 샘플 데이터 · v1 프로토타입 · <a href="dashboard.html">평가 대시보드 →</a></p>
+</div>
+
+<div class="scrim" id="scrim" onclick="closeDrawer()"></div>
+<aside class="drawer" id="drawer" aria-hidden="true">
+  <button class="dclose" onclick="closeDrawer()" aria-label="닫기">✕</button>
+  <div class="dhead" id="dhead"></div>
+  <div class="dbody" id="dbody"></div>
+</aside>
+
+<script src="data.js"></script>
+<script>
+const SECTORS = window.DEMO.sectors;
+const POLICIES = window.DEMO.policies;
+
+// build matrix lookup
+const M = {};
+POLICIES.forEach(p=>p.impacts.forEach(im=>{ M[im.s+"|"+p.n]={...im,p}; }));
+const cls = v => v===0?"na":(v>0?"p":"n")+Math.abs(v);
+
+// render grid
+const grid = document.getElementById("grid");
+let html = `<div class="gh corner">업종 ＼ 정책</div>`;
+POLICIES.forEach(p=>{ html += `<div class="gh" onclick="openPolicy('${p.n}')"><span class="pn">${p.n}</span>${p.short}</div>`; });
+SECTORS.forEach(s=>{
+  html += `<div class="rowlab">${s}</div>`;
+  POLICIES.forEach(p=>{
+    const m = M[s+"|"+p.n];
+    if(!m){ html += `<div class="cell na"><span class="v">·</span></div>`; }
+    else{
+      const sign = m.v>0?"+":"";
+      html += `<div class="cell ${cls(m.v)}" onclick="openPolicy('${p.n}','${s.replace(/'/g,"")}')" title="${s} × ${p.short}: ${sign}${m.v}">
+        <span class="v">${sign}${m.v}</span><span class="seed">◍</span></div>`;
+    }
+  });
+});
+grid.innerHTML = html;
+
+// legend cards
+document.getElementById("legend").innerHTML = POLICIES.map(p=>`
+  <div class="pcard" onclick="openPolicy('${p.n}')">
+    <div class="ptop"><span class="pn">${p.n}</span><span class="pstatus">${p.status}</span></div>
+    <h4>${p.title}</h4>
+    <div class="pmeta">${p.date} · ${p.src}</div>
+  </div>`).join("");
+
+// drawer
+const scrim=document.getElementById("scrim"), drawer=document.getElementById("drawer");
+function openPolicy(n, hot){
+  const p = POLICIES.find(x=>x.n===n);
+  document.getElementById("dhead").innerHTML = `
+    <span class="dn">${p.n} · ${p.cat}</span>
+    <h3>${p.title}</h3>
+    <div class="tags"><span class="tag">${p.status}</span><span class="tag">${p.date}</span><span class="tag">${p.src}</span></div>`;
+  const impacts = p.impacts.map(im=>{
+    const pos = im.v>0, sign=pos?"+":"";
+    return `<div class="impact ${im.s===hot?'hot':''}">
+      <div class="itop"><span class="sname">${im.s}</span>
+        <span class="score ${pos?'pos':'neg'}">${sign}${im.v}</span></div>
+      <div class="reason">${im.reason}</div>
+      <div class="cos">${im.cos.map(c=>`<span class="co">${c}</span>`).join("")}</div>
+      <div class="evalrow">◍ 점수 상태: <b>도메인 검수 전 (AI 샘플)</b> — 김태윤·이예준 Eval 대기</div>
+    </div>`;}).join("");
+  document.getElementById("dbody").innerHTML = `
+    <div class="dsec"><div class="dt">정책 요약</div><p>${p.summary}</p></div>
+    <div class="dsec"><div class="dt">핵심 변화점</div><ul class="chgs">${p.changes.map(c=>`<li>${c}</li>`).join("")}</ul></div>
+    <div class="dsec"><div class="dt">수혜 / 피해 (업종 · 기업)</div>${impacts}</div>`;
+  scrim.classList.add("open"); drawer.classList.add("open"); drawer.setAttribute("aria-hidden","false");
+}
+function closeDrawer(){ scrim.classList.remove("open"); drawer.classList.remove("open"); drawer.setAttribute("aria-hidden","true"); }
+document.addEventListener("keydown",e=>{ if(e.key==="Escape") closeDrawer(); });
+
+// filter
+function setFilter(f, el){
+  document.body.className = "f-"+f;
+  document.querySelectorAll(".chip").forEach(c=>c.className="chip"+(c.dataset.f==="pos"?" pos":c.dataset.f==="neg"?" neg":""));
+  el.classList.add("on");
+}
+</script>
+</body>
+</html>
