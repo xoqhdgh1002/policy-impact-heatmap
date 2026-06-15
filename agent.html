@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>이 에이전트는 어떻게 일하나 — 구조</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" rel="stylesheet" media="print" onload="this.media='all'">
+<noscript><link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" rel="stylesheet"></noscript>
+<style>
+  :root{
+    --bg:#0a0c10; --bg2:#0f1218; --surface:#141821; --surface2:#1b212c;
+    --line:#262d3a; --line2:#333b4a;
+    --text:#e8eaef; --muted:#9aa3b4; --faint:#646d7e;
+    --accent:#34c3d4; --accent-dim:#1d6b75; --gold:#f4c66a; --violet:#9db4ff;
+    --pos-ink:#7ff0b6; --neg-ink:#ff9b93;
+    --r:14px; --rs:9px;
+    --mono:"SFMono-Regular",ui-monospace,"JetBrains Mono",Menlo,Consolas,monospace;
+    --sans:"Pretendard","Pretendard Variable",system-ui,-apple-system,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{font-family:var(--sans);background:var(--bg);color:var(--text);line-height:1.5;-webkit-font-smoothing:antialiased;
+    background-image:radial-gradient(900px 500px at 88% -8%, rgba(52,195,212,.07), transparent 60%),
+                     radial-gradient(700px 400px at 5% 0%, rgba(157,180,255,.05), transparent 55%);
+    min-height:100vh;padding-bottom:60px}
+  .wrap{max-width:1100px;margin:0 auto;padding:0 22px}
+  a{color:var(--accent)}
+
+  header{position:sticky;top:0;z-index:30;backdrop-filter:blur(14px);
+    background:linear-gradient(180deg,rgba(10,12,16,.92),rgba(10,12,16,.7));border-bottom:1px solid var(--line)}
+  .hbar{max-width:1100px;margin:0 auto;padding:14px 22px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+  .brand{display:flex;flex-direction:column;gap:2px;margin-right:auto}
+  .brand .kicker{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--violet);font-weight:700}
+  .brand h1{font-size:19px;font-weight:800;letter-spacing:-.02em;display:flex;align-items:center;gap:9px}
+  .brand h1 .dot{width:8px;height:8px;border-radius:50%;background:var(--violet);box-shadow:0 0 14px var(--violet)}
+  .nav{display:flex;gap:6px;flex-wrap:wrap}
+  .nav a{font-size:12.5px;font-weight:700;text-decoration:none;color:var(--muted);background:var(--surface);
+    border:1px solid var(--line2);padding:7px 13px;border-radius:99px;transition:.15s}
+  .nav a:hover{color:var(--text);border-color:var(--faint)}
+  .nav a.on{color:var(--bg);background:var(--violet);border-color:var(--violet)}
+
+  .lede{padding:34px 0 8px}
+  .lede h2{font-size:clamp(22px,2.7vw,33px);font-weight:800;letter-spacing:-.025em;line-height:1.16}
+  .lede h2 .hl{color:var(--violet)}
+  .lede p{color:var(--muted);max-width:720px;font-size:14.5px;margin-top:10px}
+  .lede .oneline{margin-top:14px;font-size:13.5px;color:var(--text);background:var(--surface);border:1px solid var(--line2);
+    border-radius:10px;padding:12px 15px;line-height:1.6}
+  .lede .oneline b{color:var(--violet)}
+
+  .sectit{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);font-weight:700;margin:40px 0 14px;display:flex;align-items:center;gap:9px}
+  .sectit::after{content:"";flex:1;height:1px;background:var(--line)}
+
+  /* ── loop flow ── */
+  .flow{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+  .node{background:var(--surface);border:1px solid var(--line);border-radius:var(--rs);padding:14px 14px 13px;position:relative;min-height:118px;display:flex;flex-direction:column}
+  .node .emoji{font-size:21px;line-height:1}
+  .node .ni{font-family:var(--mono);font-size:10px;color:var(--faint);font-weight:700;position:absolute;top:11px;right:12px}
+  .node h4{font-size:13.5px;font-weight:800;margin:9px 0 4px;letter-spacing:-.01em}
+  .node p{font-size:11.5px;color:var(--muted);line-height:1.5}
+  .node.act{border-color:var(--accent-dim);background:linear-gradient(180deg,rgba(52,195,212,.06),transparent)}
+  .node.human{border-color:rgba(244,198,106,.35);background:linear-gradient(180deg,rgba(244,198,106,.06),transparent)}
+  .node.ship{border-color:rgba(127,240,182,.3);background:linear-gradient(180deg,rgba(127,240,182,.05),transparent)}
+  .node .who{margin-top:auto;padding-top:8px;font-size:10px;font-family:var(--mono);font-weight:700}
+  .node .who.ai{color:var(--accent)} .node .who.hu{color:var(--gold)}
+  .loopback{margin:14px 0 2px;text-align:center;font-size:12px;color:var(--violet);font-weight:700;
+    border:1px dashed rgba(157,180,255,.4);border-radius:99px;padding:8px 14px;display:inline-flex;gap:8px;align-items:center}
+  .loopwrap{display:flex;justify-content:center}
+
+  /* ── two col lists ── */
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:17px 19px}
+  .card h3{font-size:14.5px;font-weight:800;margin-bottom:3px;display:flex;align-items:center;gap:8px}
+  .card .csub{font-size:12px;color:var(--muted);margin-bottom:13px}
+  .list{display:flex;flex-direction:column;gap:9px}
+  .list .it{display:flex;gap:10px;font-size:13px;color:var(--text);line-height:1.45}
+  .list .it .ic{flex:none;width:24px;height:24px;border-radius:7px;background:var(--surface2);border:1px solid var(--line2);
+    display:flex;align-items:center;justify-content:center;font-size:13px}
+  .list .it b{color:var(--text)} .list .it span{color:var(--muted)}
+  .mono{font-family:var(--mono)}
+
+  /* ── role split ── */
+  .roles{display:grid;grid-template-columns:1fr 1fr;gap:0;border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+  .roles .col{padding:18px 20px}
+  .roles .col.h{background:linear-gradient(180deg,rgba(244,198,106,.07),transparent);border-right:1px solid var(--line)}
+  .roles .col.a{background:linear-gradient(180deg,rgba(52,195,212,.06),transparent)}
+  .roles .col .rt{font-size:13.5px;font-weight:800;margin-bottom:11px;display:flex;align-items:center;gap:8px}
+  .roles .col.h .rt{color:var(--gold)} .roles .col.a .rt{color:var(--accent)}
+  .roles ul{list-style:none;display:flex;flex-direction:column;gap:8px}
+  .roles li{font-size:12.5px;color:var(--muted);padding-left:16px;position:relative;line-height:1.45}
+  .roles li:before{content:"›";position:absolute;left:0;font-weight:800}
+  .roles .col.h li:before{color:var(--gold)} .roles .col.a li:before{color:var(--accent)}
+  .roles li b{color:var(--text)}
+
+  /* ── components map ── */
+  .comp{display:grid;grid-template-columns:repeat(auto-fill,minmax(215px,1fr));gap:10px}
+  .cbox{background:var(--surface);border:1px solid var(--line);border-radius:var(--rs);padding:13px 15px}
+  .cbox .cn{font-size:13px;font-weight:800;display:flex;align-items:center;gap:7px}
+  .cbox .cd{font-size:11.5px;color:var(--muted);margin-top:5px;line-height:1.5}
+  .cbox .ct{font-size:10px;font-family:var(--mono);color:var(--faint);margin-top:7px;word-break:break-all}
+
+  .note{margin-top:14px;font-size:12.5px;color:var(--gold);background:rgba(244,198,106,.07);
+    border:1px solid rgba(244,198,106,.25);padding:11px 14px;border-radius:10px;line-height:1.6}
+  .note b{color:var(--gold)}
+
+  .foot{margin-top:42px;text-align:center;font-size:11px;color:var(--faint);font-family:var(--mono)}
+  .foot a{color:var(--muted)}
+
+  @media(max-width:860px){.flow{grid-template-columns:repeat(2,1fr)}}
+  @media(max-width:560px){.flow{grid-template-columns:1fr}.two{grid-template-columns:1fr}.roles{grid-template-columns:1fr}.roles .col.h{border-right:none;border-bottom:1px solid var(--line)}}
+</style>
+</head>
+<body>
+<header>
+  <div class="hbar">
+    <div class="brand">
+      <span class="kicker">바사해 · 태봉호팀 — 운영 구조</span>
+      <h1><span class="dot"></span>이 에이전트는 어떻게 일하나</h1>
+    </div>
+    <nav class="nav">
+      <a href="index.html">히트맵</a>
+      <a href="dashboard.html">평가 대시보드</a>
+      <a class="on" href="agent.html">에이전트 구조</a>
+    </nav>
+  </div>
+</header>
+
+<div class="wrap">
+  <section class="lede">
+    <h2>여러분의 <span class="hl">텔레그램 한 마디</span>가<br>어떻게 <span class="hl">제품</span>이 되어 돌아오는가</h2>
+    <p>이 팀의 개발은 사람이 코드를 치는 대신, 텔레그램 그룹에 붙은 <b style="color:var(--text)">AI 에이전트(봇)</b>가 대화를 받아 직접 코드를 쓰고 배포합니다. 누구나 한 줄 코멘트로 제품을 바꿀 수 있어요. 아래는 그 전체 구조입니다.</p>
+    <div class="oneline">💬 멤버가 그룹에 의견 → 🤖 에이전트가 맥락을 읽고 → 🔀 AI 일/사람 일을 가르고 → ⚙️ 코드·데이터를 만들고 → ✅ 진짜 화면으로 검증 → 🚀 배포 → 📣 보고. <b>이게 한 바퀴, 계속 반복됩니다.</b></div>
+  </section>
+
+  <div class="sectit">한 바퀴 — 코멘트가 제품이 되는 8단계</div>
+  <div class="flow">
+    <div class="node human"><span class="ni">01</span><div class="emoji">💬</div><h4>코멘트</h4><p>멤버가 텔레그램 그룹에 의견·요청·평가를 던진다.</p><div class="who hu">사람</div></div>
+    <div class="node"><span class="ni">02</span><div class="emoji">🤖</div><h4>수신</h4><p>봇이 멘션·메시지를 받아 무엇을 원하는지 해석한다.</p><div class="who ai">에이전트</div></div>
+    <div class="node act"><span class="ni">03</span><div class="emoji">🧭</div><h4>맥락 읽기</h4><p>지도(project/)·메모리·소스코드·git 이력을 읽어 상황 파악.</p><div class="who ai">에이전트</div></div>
+    <div class="node act"><span class="ni">04</span><div class="emoji">🔀</div><h4>트리아지</h4><p>AI가 할 일(생성·검색)인지, 사람·코드 몫인지 분류.</p><div class="who ai">에이전트</div></div>
+    <div class="node act"><span class="ni">05</span><div class="emoji">⚙️</div><h4>실행</h4><p>코드 작성·스킬 실행·웹 검색·데이터 정리를 직접 수행.</p><div class="who ai">에이전트</div></div>
+    <div class="node act"><span class="ni">06</span><div class="emoji">✅</div><h4>검증</h4><p>실제 브라우저로 화면·동작을 열어 의도대로 됐는지 확인.</p><div class="who ai">에이전트</div></div>
+    <div class="node ship"><span class="ni">07</span><div class="emoji">🚀</div><h4>커밋·배포</h4><p>git에 기록하고 GitHub Pages로 라이브 반영.</p><div class="who ai">에이전트</div></div>
+    <div class="node"><span class="ni">08</span><div class="emoji">📣</div><h4>보고</h4><p>무엇을·왜 했는지 텔레그램으로 다시 알린다.</p><div class="who ai">에이전트</div></div>
+  </div>
+  <div class="loopwrap"><div class="loopback">↻ 보고를 보고 다시 코멘트 → 1단계로. <b style="color:var(--text)">반복 속도 = 품질.</b></div></div>
+
+  <div class="sectit">에이전트가 보는 것 / 하는 것</div>
+  <div class="two">
+    <div class="card">
+      <h3>👁 보는 것 (읽기)</h3>
+      <div class="csub">매번 일하기 전에 이 자료들로 맥락을 잡는다.</div>
+      <div class="list">
+        <div class="it"><div class="ic">🧭</div><div><b>지도</b> <span>— project/ 의 trunk(큰 줄기)·MAP(현황)·branches(역할). 팀의 방향·결정이 여기 박혀 있음.</span></div></div>
+        <div class="it"><div class="ic">🧠</div><div><b>메모리</b> <span>— 팀원·결정·일정 등 세션을 넘어 기억하는 사실.</span></div></div>
+        <div class="it"><div class="ic">📄</div><div><b>소스코드</b> <span>— mvp/site (히트맵·대시보드·데이터)와 mvp/skills (AI 스킬 스펙).</span></div></div>
+        <div class="it"><div class="ic">🕓</div><div><b>git 이력</b> <span>— 지금까지 무엇을 왜 바꿨는지 전체 기록.</span></div></div>
+      </div>
+    </div>
+    <div class="card">
+      <h3>🛠 하는 것 (실행)</h3>
+      <div class="csub">사람의 승인 방향 안에서 직접 수행한다.</div>
+      <div class="list">
+        <div class="it"><div class="ic">✍️</div><div><b>코드·데이터 작성</b> <span>— 화면·로직·점수 데이터를 직접 만들고 고친다.</span></div></div>
+        <div class="it"><div class="ic">🔎</div><div><b>리서치</b> <span>— 웹·공공데이터(법제처·DART 등)에서 사실을 찾아 확인.</span></div></div>
+        <div class="it"><div class="ic">🧩</div><div><b>스킬 실행</b> <span>— 정책 추출·점수화·상세분석·출처 연결 등 재사용 능력 단위.</span></div></div>
+        <div class="it"><div class="ic">🚀</div><div><b>커밋·배포·검증</b> <span>— git 기록 → 라이브 배포 → 브라우저로 실제 확인.</span></div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sectit">역할 분담 — 왜 이렇게 일하나</div>
+  <div class="roles">
+    <div class="col h">
+      <div class="rt">🙋 사람 (멤버)</div>
+      <ul>
+        <li><b>방향</b>을 정한다 — 무엇을 만들지, 어디로 갈지</li>
+        <li><b>도메인 정답</b>을 쥔다 — 어느 기업이 수혜인지, 점수가 맞는지 (제품의 핵심 자산)</li>
+        <li><b>평가</b>한다 — AI 초안을 출처와 대조해 맞다/틀리다</li>
+        <li>척도·가중치 같은 <b>판단</b>을 내린다</li>
+      </ul>
+    </div>
+    <div class="col a">
+      <div class="rt">🤖 에이전트 (봇)</div>
+      <ul>
+        <li><b>실행</b>한다 — 코드·화면·데이터를 만든다</li>
+        <li><b>생성·검색·파싱</b> — 요약·서술·출처 찾기·문서 추출</li>
+        <li><b>배포·검증</b>하고 결과를 <b>보고</b>한다</li>
+        <li>같은 일을 지치지 않고 <b>반복</b>한다</li>
+      </ul>
+    </div>
+  </div>
+  <div class="note">🔑 원칙: <b>결정·정답은 사람, 생성·실행·검증은 AI.</b> 그래서 코딩을 몰라도 도메인·기획 강점만으로 제품을 빠르게 굴릴 수 있습니다. AI가 만든 건 항상 <b>초안</b>이고, 도메인 멤버의 평가가 제품의 진짜 가치를 만듭니다.</div>
+
+  <div class="sectit">구성 요소 — 무엇으로 이뤄져 있나</div>
+  <div class="comp">
+    <div class="cbox"><div class="cn">💬 텔레그램 그룹</div><div class="cd">입출력 채널. 멤버 ↔ 에이전트가 대화하는 곳.</div><div class="ct">바사해 태봉호팀</div></div>
+    <div class="cbox"><div class="cn">🤖 에이전트</div><div class="cd">OpenClaw + Claude. 맥락을 읽고 코드를 쓰고 배포하는 두뇌·실행자.</div><div class="ct">Moonlab_openclaw_bot</div></div>
+    <div class="cbox"><div class="cn">🗂 워크스페이스 git</div><div class="cd">지도·소스·스킬의 정본. 모든 변경이 기록되는 단일 진실원천.</div><div class="ct">project/ · mvp/</div></div>
+    <div class="cbox"><div class="cn">🌐 배포 저장소</div><div class="cd">라이브 사이트 소스. GitHub Pages가 자동으로 띄운다.</div><div class="ct">policy-impact-heatmap</div></div>
+    <div class="cbox"><div class="cn">🧠 메모리</div><div class="cd">세션을 넘어 팀·결정·일정을 기억.</div><div class="ct">팀 · 결정 · 마일스톤</div></div>
+    <div class="cbox"><div class="cn">🧩 AI 스킬</div><div class="cd">재사용 능력 단위. 피드백이 스킬이 되어 파이프라인에 꽂힌다.</div><div class="ct">mvp/skills/ · data.js</div></div>
+  </div>
+
+  <p class="foot">바사해 · 태봉호팀 — 아이디어 A · 운영 구조 설명 · <a href="index.html">← 히트맵</a> · <a href="dashboard.html">평가 대시보드</a></p>
+</div>
+</body>
+</html>
