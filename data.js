@@ -8,8 +8,33 @@
  *  점수/근거/매핑은 여전히 AI 초안. vby가 붙은 셀만 도메인 1차 검증됨.
  */
 window.DEMO = {
-  meta: { version: "v2", demoday: "2026-06-20 09:00 KST", team: "바사해 · 태봉호팀 — 아이디어 A",
+  meta: { version: "v2.5", demoday: "2026-06-20 09:00 KST", team: "바사해 · 태봉호팀 — 아이디어 A",
     evalnote: "평가 = 전문가가 권위 있는 출처(증권사 리포트·DART 공시·정책 원문)와 대조해 검증하는 것. 사용자의 감(感) 투표가 아님." },
+
+  // ── 제안 → 반영 원장 (멤버 코멘트가 어떻게 제품이 됐나) ───────────────────────
+  // 대시보드 "제안 → 반영" 보드가 이 목록을 렌더한다. status: done(반영) · routed(AI 스킬) · pending(대기)
+  // ver: done일 때 반영 버전. note: routed/pending 사유·행선지.
+  reflections: [
+    { member:"이예준", role:"정책→기업·업종 매핑", color:"accent", items:[
+      { t:"평가를 '감 투표'에서 권위 출처 대조 검증으로 재정의 — 셀마다 근거출처(ev)·검증자(vby)·보강필요(needsrc)", st:"done", ver:"v2" },
+      { t:"상세 분석(정책핵심→수혜 업종→업종 내 top 기업) 서술 생성", st:"done", ver:"v2.1" },
+      { t:"P2×반도체 교정 — 삼성전자(둔감)→차량용·전력 반도체 중소·중견", st:"done", ver:"v2" },
+      { t:"DART 사업보고서 부문별 매출/이익 비중 자동 추출", st:"routed", note:"AI 스킬 dart-financials (스펙)" } ]},
+    { member:"박수민", role:"UX·가치·QA", color:"gold", items:[
+      { t:"⑤ AI 초안 고지 — 상단 고정 배너(모바일 포함)", st:"done", ver:"v2.4" },
+      { t:"①② 정체성·타깃 한 줄 카피 — 히어로 '무엇/누구'", st:"done", ver:"v2.4" },
+      { t:"⑦ 폰트 크기 상향 — 본문·근거·요약·평가표", st:"done", ver:"v2.4" },
+      { t:"⑧ 다크배경 회색 텍스트 대비 상향 — WCAG AA, 3개 페이지 공통", st:"done", ver:"v2.4" },
+      { t:"⑥ 점수에 확신도(Confidence%) 병기", st:"pending", note:"김태윤 z2 '강도 vs 확신도 분리'와 통합 — 제품결정 대기" },
+      { t:"① 정책을 세로축으로 (정책 수 증가 대비)", st:"pending", note:"데이터+레이아웃 전치 — 태봉호 파이프라인과 함께" },
+      { t:"S1~S4 정책 일자·분류·기간 필터 · 노출 스코핑", st:"pending", note:"데이터 스키마(태봉호) + 제품결정" },
+      { t:"S5 과거 정책 실제 임팩트 아카이브 (시세·주가변동)", st:"pending", note:"히트맵 정체성 결정 대기 · 범위 초과시 드롭 가능" },
+      { t:"히트맵 버저닝 (버전넘버·What's New·체크리스트 diff)", st:"pending", note:"버전 라벨(v2.5) 부분 적용 + 이 보드가 What's New 역할 · 풀 체계 대기" } ]},
+    { member:"류나연", role:"첫 vertical·정책 소스", color:"doubt", items:[
+      { t:"평가 14/14 완료 — P7(×2)·P8 확정으로 needsrc 4셀 중 3셀 해소", st:"done" },
+      { t:"P6 단통법×통신 수정필요 → 도메인 재검토 1순위 등록", st:"done" },
+      { t:"정책 설명 보강 (평가자가 따로 안 찾게) — 카드에 plain-language 설명+출처", st:"routed", note:"AI 스킬 policy-extract" } ]}
+  ],
 
   // 근거 출처 채널 — 전부 무료 (이예준 제안). AI 점수의 '왜'를 사람이 대조할 곳.
   sources: [
