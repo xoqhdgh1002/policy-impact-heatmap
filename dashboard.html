@@ -12,8 +12,8 @@
   :root{
     --bg:#0a0c10; --bg2:#0f1218; --surface:#141821; --surface2:#1b212c;
     --line:#262d3a; --line2:#333b4a;
-    --text:#e8eaef; --muted:#9aa3b4; --faint:#646d7e;
-    --accent:#34c3d4; --accent-dim:#1d6b75; --gold:#f4c66a;
+    --text:#eef0f4; --muted:#b4bccc; --faint:#8e96a8;
+    --accent:#3fcde0; --accent-dim:#1d6b75; --gold:#f4c66a;
     --pos1:hsl(154 42% 18%); --pos2:hsl(154 50% 25%); --pos3:hsl(154 58% 33%);
     --neg1:hsl(4 44% 21%); --neg2:hsl(4 56% 30%); --neg3:hsl(4 66% 39%);
     --pos-ink:#7ff0b6; --neg-ink:#ff9b93;
@@ -45,9 +45,16 @@
   .nav a.on{color:var(--bg);background:var(--gold);border-color:var(--gold)}
   .dday{font-family:var(--mono);font-size:12px;color:var(--muted);border:1px solid var(--line2);padding:5px 10px;border-radius:99px;background:var(--surface)}
 
+  /* ---- AI 초안 고지 배너 (상단 고정) ---- */
+  .aibanner{display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;
+    background:linear-gradient(90deg,rgba(244,198,106,.16),rgba(244,198,106,.09));
+    border-top:1px solid rgba(244,198,106,.30);
+    color:#f6cf78;font-size:13px;font-weight:600;padding:8px 16px;text-align:center;line-height:1.45}
+  .aibanner b{color:#ffdf95;font-weight:800}
+
   .lede{padding:28px 0 6px}
-  .lede h2{font-size:clamp(20px,2.4vw,28px);font-weight:800;letter-spacing:-.025em;line-height:1.2}
-  .lede p{color:var(--muted);max-width:720px;font-size:14px;margin-top:8px}
+  .lede h2{font-size:clamp(21px,2.5vw,29px);font-weight:800;letter-spacing:-.025em;line-height:1.2}
+  .lede p{color:var(--muted);max-width:740px;font-size:15px;margin-top:8px}
   .lede .warn{margin-top:10px;font-size:12px;color:var(--gold);background:rgba(244,198,106,.07);
     border:1px solid rgba(244,198,106,.25);padding:8px 12px;border-radius:9px;display:inline-block}
 
@@ -81,9 +88,9 @@
   .zone .zt{display:flex;align-items:center;gap:9px;margin-bottom:4px}
   .zone .zn{font-family:var(--mono);font-size:11px;color:var(--accent);font-weight:700}
   .zone h4{font-size:15px;font-weight:800;letter-spacing:-.01em}
-  .zone .role{font-size:12px;color:var(--muted);margin-bottom:11px}
+  .zone .role{font-size:12.5px;color:var(--muted);margin-bottom:11px}
   .zone .qs{display:flex;flex-direction:column;gap:5px;margin-bottom:12px}
-  .zone .qs li{list-style:none;font-size:12px;color:var(--muted);padding-left:15px;position:relative;line-height:1.4}
+  .zone .qs li{list-style:none;font-size:12.5px;color:var(--muted);padding-left:15px;position:relative;line-height:1.45}
   .zone .qs li:before{content:"?";position:absolute;left:0;color:var(--gold);font-weight:700}
   .zone .zfoot{display:flex;align-items:center;gap:8px;font-size:11.5px;color:var(--faint);border-top:1px solid var(--line);padding-top:10px}
   .pill{font-size:10px;font-weight:700;padding:2px 8px;border-radius:99px;border:1px solid var(--line2);color:var(--muted)}
@@ -99,9 +106,9 @@
   .panel .ph{display:flex;align-items:center;gap:10px;margin-bottom:6px}
   .panel .ph .pn{font-family:var(--mono);font-size:11px;color:var(--accent);font-weight:700}
   .panel .ph h3{font-size:16px;font-weight:800}
-  .panel .pdesc{font-size:13px;color:var(--muted);margin-bottom:14px}
+  .panel .pdesc{font-size:13.5px;color:var(--muted);margin-bottom:14px}
 
-  table{width:100%;border-collapse:collapse;font-size:12.5px}
+  table{width:100%;border-collapse:collapse;font-size:13.5px}
   th{text-align:left;color:var(--faint);font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.04em;padding:7px 9px;border-bottom:1px solid var(--line2)}
   td{padding:9px;border-bottom:1px solid var(--line);vertical-align:top;color:var(--text)}
   tr:hover td{background:var(--surface2)}
@@ -148,7 +155,7 @@
   .skill .st.partial{color:var(--doubt);background:rgba(157,180,255,.1);border:1px solid rgba(157,180,255,.4)}
   .skill .st.manual{color:var(--fix);background:rgba(244,198,106,.08);border:1px dashed rgba(244,198,106,.5)}
   .skill .st.planned{color:var(--faint);border:1px dashed var(--line2)}
-  .skill .why{font-size:11.5px;color:var(--muted);line-height:1.5;margin-bottom:8px}
+  .skill .why{font-size:12.5px;color:var(--muted);line-height:1.5;margin-bottom:8px}
   .skill .io{font-size:10.5px;font-family:var(--mono);color:var(--faint);background:var(--bg2);border:1px solid var(--line);border-radius:6px;padding:5px 8px;line-height:1.45}
   .skill .io b{color:var(--accent)}
   /* source channel cards */
@@ -210,13 +217,14 @@
       <a class="on" href="dashboard.html">평가 대시보드</a>
       <a href="agent.html">에이전트 구조</a>
     </nav>
-    <span class="dday">데모데이 D-5 · 6/20 09:00</span>
+    <span class="dday">데모데이 D-4 · 6/20 09:00</span>
   </div>
+  <div class="aibanner">⚠️ 표시된 점수는 <b>AI가 생성한 초안</b>입니다 — 도메인 검수 전 데이터로, <b>투자 판단의 근거가 아닙니다</b>.</div>
 </header>
 
 <div class="wrap">
   <section class="lede">
-    <h2>데모를 <span style="color:var(--gold)">출처와 대조해 검증</span>하는 화면 <span class="mono" style="font-size:13px;color:var(--faint);font-weight:700">v2</span></h2>
+    <h2>데모를 <span style="color:var(--gold)">출처와 대조해 검증</span>하는 화면 <span class="mono" style="font-size:13px;color:var(--faint);font-weight:700">v2.4</span></h2>
     <p>AI가 만든 점수는 <b style="color:var(--text)">초안</b>입니다. 평가 = 감으로 투표가 아니라, 도메인 멤버가 <b style="color:var(--gold)">권위 있는 출처(증권사 리포트·DART 공시·정책 원문)와 대조</b>해 맞는지 검증하는 일입니다. 각자 자기 <b style="color:var(--text)">구역</b>을 골라 데이터·출처를 보고, 셀마다 <b style="color:var(--ok)">맞음</b>/<b style="color:var(--fix)">수정</b>/<b style="color:var(--doubt)">의문</b>을 찍고 메모 → <b style="color:var(--gold)">피드백 내보내기</b>로 복사 → 팀 텔레그램에 붙여넣으면 봇이 모아 다음 버전에 반영합니다. (체크는 이 브라우저에 자동 저장)</p>
     <span class="warn">💡 이예준 제안 반영 — 평가자가 자기 분야가 아니면 틀릴 수 있으니, 점수는 <b>출처 링크</b>로 뒷받침하고 검증한 사람을 표시합니다. 출처 없는 셀(❓ 분야 밖)은 <b>'출처 보강 필요'</b>로 드러냅니다.</span>
   </section>
@@ -262,7 +270,7 @@
   <p class="csub" style="font-size:12.5px;color:var(--muted);margin:-4px 0 12px">이예준 제안. AI 점수의 '왜'를 사람이 권위 있는 자료와 대조하는 채널. FnGuide는 유료라 보류, 아래는 모두 무료입니다.</p>
   <div class="srcgrid" id="srcgrid"></div>
 
-  <p class="foot">정책 8 · 업종 7 · 평가셀 14 · v2 (이예준 피드백 반영) · 평가 대시보드 · <a href="index.html">← 히트맵</a></p>
+  <p class="foot">정책 8 · 업종 7 · 평가셀 14 · v2.4 (박수민 QA: 가독성·AI고지 배너·정체성/타깃) · 평가 대시보드 · <a href="index.html">← 히트맵</a></p>
 </div>
 
 <div class="exbar">
