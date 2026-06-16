@@ -58,6 +58,20 @@
   .lede .warn{margin-top:10px;font-size:12px;color:var(--gold);background:rgba(244,198,106,.07);
     border:1px solid rgba(244,198,106,.25);padding:8px 12px;border-radius:9px;display:inline-block}
 
+  /* W6. What's New 패널 (changelog 단일소스) */
+  .whatsnew{background:var(--surface);border:1px solid var(--line);border-left:3px solid var(--gold);border-radius:var(--rs);padding:13px 16px;margin-top:16px}
+  .whatsnew .wnh{display:flex;align-items:center;gap:9px;margin-bottom:9px;flex-wrap:wrap}
+  .whatsnew .wnv{font-family:var(--mono);font-size:12px;font-weight:800;color:var(--gold);background:rgba(244,198,106,.1);border:1px solid rgba(244,198,106,.35);padding:2px 9px;border-radius:99px}
+  .whatsnew .wnt{font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--faint)}
+  .whatsnew .wnd{margin-left:auto;font-family:var(--mono);font-size:11px;color:var(--faint)}
+  .whatsnew ul{display:flex;flex-direction:column;gap:5px;margin:0;padding:0}
+  .whatsnew li{list-style:none;font-size:13px;color:var(--text);padding-left:17px;position:relative;line-height:1.5}
+  .whatsnew li:before{content:"+";position:absolute;left:0;color:var(--ok);font-weight:800}
+  .whatsnew .wnold{margin-top:10px;padding-top:9px;border-top:1px dashed var(--line2);font-size:11.5px;color:var(--muted);font-family:var(--mono)}
+
+  /* W8. QA 체크리스트 입력 */
+  .qcheck{width:17px;height:17px;accent-color:var(--gold);cursor:pointer;margin-top:2px}
+
   .sectit{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);font-weight:700;margin:30px 0 12px;display:flex;align-items:center;gap:9px}
   .sectit::after{content:"";flex:1;height:1px;background:var(--line)}
 
@@ -241,10 +255,12 @@
 
 <div class="wrap">
   <section class="lede">
-    <h2>데모를 <span style="color:var(--gold)">출처와 대조해 검증</span>하는 화면 <span class="mono" style="font-size:13px;color:var(--faint);font-weight:700">v2.4</span></h2>
+    <h2>데모를 <span style="color:var(--gold)">출처와 대조해 검증</span>하는 화면 <span class="mono" id="verlabel" style="font-size:13px;color:var(--faint);font-weight:700">v2.6</span></h2>
     <p>AI가 만든 점수는 <b style="color:var(--text)">초안</b>입니다. 평가 = 감으로 투표가 아니라, 도메인 멤버가 <b style="color:var(--gold)">권위 있는 출처(증권사 리포트·DART 공시·정책 원문)와 대조</b>해 맞는지 검증하는 일입니다. 각자 자기 <b style="color:var(--text)">구역</b>을 골라 데이터·출처를 보고, 셀마다 <b style="color:var(--ok)">맞음</b>/<b style="color:var(--fix)">수정</b>/<b style="color:var(--doubt)">의문</b>을 찍고 메모 → <b style="color:var(--gold)">피드백 내보내기</b>로 복사 → 팀 텔레그램에 붙여넣으면 봇이 모아 다음 버전에 반영합니다. (체크는 이 브라우저에 자동 저장)</p>
     <span class="warn">💡 이예준 제안 반영 — 평가자가 자기 분야가 아니면 틀릴 수 있으니, 점수는 <b>출처 링크</b>로 뒷받침하고 검증한 사람을 표시합니다. 출처 없는 셀(❓ 분야 밖)은 <b>'출처 보강 필요'</b>로 드러냅니다.</span>
   </section>
+
+  <div class="whatsnew" id="whatsnew"></div>
 
   <div class="sectit">한눈에 — 지금 데이터</div>
   <div class="kpis" id="kpis"></div>
@@ -291,7 +307,7 @@
   <p class="csub" style="font-size:12.5px;color:var(--muted);margin:-4px 0 12px">이예준 제안. AI 점수의 '왜'를 사람이 권위 있는 자료와 대조하는 채널. FnGuide는 유료라 보류, 아래는 모두 무료입니다.</p>
   <div class="srcgrid" id="srcgrid"></div>
 
-  <p class="foot">정책 8 · 업종 7 · 평가셀 14 · v2.5 (+제안→반영 보드 · 이예준·박수민·류나연) · 평가 대시보드 · <a href="index.html">← 히트맵</a></p>
+  <p class="foot">정책 8 · 업종 7 · 평가셀 14 · v2.6 (eval→data 반영 · What's New · QA 입력란) · 평가 대시보드 · <a href="index.html">← 히트맵</a></p>
 </div>
 
 <div class="exbar">
@@ -312,6 +328,16 @@
 <script>
 const D = window.DEMO;
 const KEY = "pih-eval-v1";
+// W8. QA 체크리스트 항목(슬라이스 렌더 + 내보내기 공용 단일 소스)
+const QA_ITEMS = [
+  "처음 보는 사람이 3초 안에 '뭐 하는 화면'인지 이해되는가",
+  "타깃 사용자가 누구이고 왜 쓰는지 한 줄로 나오는가",
+  "히트맵 셀/정책 클릭 인터랙션이 직관적인가",
+  "모바일 화면에서 표·드로어가 깨지지 않는가",
+  "'AI 샘플·검수 전' 고지가 충분히 보이는가",
+  "색(수혜 초록 / 피해 빨강)이 직관적인가",
+  "폰트 크기·대비가 읽기 편한가 (가독성)"
+];
 
 // source channel lookup (id -> {name,url,...})
 const SRC = {}; (D.sources||[]).forEach(s=>SRC[s.id]=s);
@@ -335,7 +361,7 @@ function vbyHTML(c){ return c.vby?`<span class="vchk">✓ ${c.vby} 검증</span>
 
 // state
 let state = load();
-function load(){ try{ return JSON.parse(localStorage.getItem(KEY)) || {evaluator:null,marks:{}}; }catch(e){ return {evaluator:null,marks:{}}; } }
+function load(){ try{ const s=JSON.parse(localStorage.getItem(KEY))||{}; s.marks=s.marks||{}; s.checklist=s.checklist||{}; if(!("evaluator"in s))s.evaluator=null; return s; }catch(e){ return {evaluator:null,marks:{},checklist:{}}; } }
 function save(){ localStorage.setItem(KEY, JSON.stringify(state)); }
 
 const sign=v=>v>0?"+":"";
@@ -425,9 +451,13 @@ function sliceBody(slice){
       <table><thead><tr><th>업종</th><th>정책 수</th><th>합산 임팩트</th></tr></thead><tbody>${rows}</tbody></table>`;
   }
   if(slice==="qa"){
-    const items=["처음 보는 사람이 3초 안에 '뭐 하는 화면'인지 이해되는가","타깃 사용자가 누구이고 왜 쓰는지 한 줄로 나오는가","히트맵 셀/정책 클릭 인터랙션이 직관적인가","모바일 화면에서 표·드로어가 깨지지 않는가","'AI 샘플·검수 전' 고지가 충분히 보이는가","색(수혜 초록 / 피해 빨강)이 직관적인가"];
-    return `<p class="pdesc">사용자 경험·가치·QA 체크. 깨지는 곳은 평가 표 메모 또는 텔레그램으로. <a href="index.html" target="_blank">히트맵 새 탭으로 열기 ↗</a></p>
-      <table><tbody>${items.map(it=>`<tr><td style="width:24px" class="mono faint">□</td><td>${it}</td></tr>`).join("")}</tbody></table>`;
+    const rows=QA_ITEMS.map((it,i)=>{ const ck=state.checklist[i]||{};
+      return `<tr>
+        <td style="width:26px;vertical-align:top"><input type="checkbox" class="qcheck" ${ck.done?'checked':''} onchange="setCheck(${i},this.checked)"></td>
+        <td>${it}<textarea class="note" style="margin-top:6px" placeholder="발견/메모 (선택)..." onchange="setCheckNote(${i},this.value)">${(ck.note||'').replace(/</g,'&lt;')}</textarea></td>
+      </tr>`;}).join("");
+    return `<p class="pdesc">사용자 경험·가치·QA 체크. <b style="color:var(--gold)">체크하고 발견을 메모</b>하면 <b>피드백 내보내기</b>에 함께 담겨 텔레그램으로 나갑니다(브라우저 자동 저장). <a href="index.html" target="_blank">히트맵 새 탭 ↗</a></p>
+      <table class="etbl"><tbody>${rows}</tbody></table>`;
   }
   if(slice==="rollup"){
     return `<p class="pdesc">기업 점수 → 업종 점수 집계 규칙을 정의. 아래 '업종별 평균 임팩트'는 단순평균 초안. 가중/정규화 방식을 제안하면 봇이 모델에 반영.</p>
@@ -459,6 +489,19 @@ function setVerdict(id,v){
   renderTable(); renderKPI(); renderExport();
 }
 function setNote(id,val){ const m=state.marks[id]||{}; m.note=val; state.marks[id]=m; save(); renderExport(); }
+/* ---------- W8. QA 체크리스트 ---------- */
+function setCheck(i,v){ const c=state.checklist[i]||{}; c.done=v; state.checklist[i]=c; save(); renderExport(); }
+function setCheckNote(i,v){ const c=state.checklist[i]||{}; c.note=v; state.checklist[i]=c; save(); renderExport(); }
+/* ---------- W6. What's New (changelog 단일소스) ---------- */
+function renderWhatsNew(){
+  const el=document.getElementById("whatsnew"); if(!el||!D.changelog||!D.changelog.length) return;
+  const cur=D.changelog[0];
+  const older=D.changelog.slice(1,4).map(c=>c.ver).join(" · ");
+  el.innerHTML=`<div class="wnh"><span class="wnv">${cur.ver}</span><span class="wnt">What's New</span><span class="wnd">${cur.date}</span></div>
+    <ul>${cur.items.map(i=>`<li>${i}</li>`).join("")}</ul>
+    ${older?`<div class="wnold">이전: ${older}</div>`:""}`;
+  const vl=document.getElementById("verlabel"); if(vl) vl.textContent=cur.ver;
+}
 
 /* ---------- analytics ---------- */
 function renderDist(){
@@ -539,12 +582,24 @@ function exportFeedback(){
   const who=state.evaluator||"(평가자 미선택)";
   const d=new Date(); const ymd=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
   const lbl={ok:"✅ 맞음",fix:"✏️ 수정필요",doubt:"❓ 의문"};
-  const lines=[];
+  // 셀 판정
+  const lines=[], verdicts=[];
   CELLS.forEach(c=>{ const m=state.marks[c.id]; if(m&&(m.verdict||m.note)){
     lines.push(`- ${c.pn} ${c.pshort} × ${c.sector} (현재 ${sign(c.v)}${c.v}) → ${m.verdict?lbl[m.verdict]:"메모"}${m.note?` · ${m.note}`:""}`);
+    verdicts.push({cell:c.id,policy:c.pn,sector:c.sector,score:c.v,verdict:m.verdict||null,note:m.note||null});
   }});
-  if(!lines.length){ toast("아직 판정/메모한 셀이 없어요. 표에서 맞음/수정/의문을 찍어주세요."); return; }
-  const md=`📋 데모 평가 피드백 — ${who} · ${ymd}\n(진행 ${lines.length}/${CELLS.length}셀)\n\n${lines.join("\n")}\n\n#정책히트맵 #eval`;
+  // QA 체크리스트
+  const clines=[], checklist=[];
+  Object.keys(state.checklist||{}).forEach(i=>{ const c=state.checklist[i], it=QA_ITEMS[i]; if(it&&(c.done||c.note)){
+    clines.push(`- [${c.done?'x':' '}] ${it}${c.note?` · ${c.note}`:''}`);
+    checklist.push({item:it,done:!!c.done,note:c.note||null});
+  }});
+  if(!lines.length && !clines.length){ toast("아직 판정/메모·체크가 없어요. 표나 QA 체크리스트를 채워주세요."); return; }
+  let md=`📋 데모 평가 피드백 — ${who} · ${ymd}\n(셀 ${lines.length}/${CELLS.length} · QA체크 ${checklist.length})\n`;
+  if(lines.length) md+=`\n[셀 판정]\n${lines.join("\n")}\n`;
+  if(clines.length) md+=`\n[QA 체크리스트]\n${clines.join("\n")}\n`;
+  // W4. 구조화 블록 — 봇이 파싱해 data.js 셀 상태(vby/needsrc/score)에 반영. ok→검증, fix→리뷰큐.
+  md+=`\n\`\`\`json\n${JSON.stringify({evaluator:state.evaluator,date:ymd,verdicts,checklist})}\n\`\`\`\n\n#정책히트맵 #eval`;
   copy(md);
 }
 function copy(text){
@@ -557,13 +612,13 @@ function fallback(text){
   try{document.execCommand("copy");toast("✅ 복사됐어요! 텔레그램에 붙여넣기.");}catch(e){toast("복사 실패 — 길게 눌러 직접 복사하세요.");}
   document.body.removeChild(ta);
 }
-function resetMine(){ if(confirm("내 평가(판정·메모)를 모두 지울까요?")){ state.marks={}; save(); renderTable();renderKPI();renderExport(); toast("초기화했어요."); } }
+function resetMine(){ if(confirm("내 평가(셀 판정·메모 + QA 체크리스트)를 모두 지울까요?")){ state.marks={}; state.checklist={}; save(); renderTable();renderKPI();renderExport(); if(state.evaluator){const z=D.zones.find(x=>x.member===state.evaluator); if(z) openPanel(z.id);} toast("초기화했어요."); } }
 
 let tt;
 function toast(msg){ const t=document.getElementById("toast"); t.textContent=msg; t.classList.add("show"); clearTimeout(tt); tt=setTimeout(()=>t.classList.remove("show"),3400); }
 
 /* ---------- init ---------- */
-renderKPI(); renderWho(); renderZones(); renderTable(); renderDist(); renderRollup(); renderSkills(); renderReflections(); renderSources(); renderExport();
+renderWhatsNew(); renderKPI(); renderWho(); renderZones(); renderTable(); renderDist(); renderRollup(); renderSkills(); renderReflections(); renderSources(); renderExport();
 if(state.evaluator){ const z=D.zones.find(x=>x.member===state.evaluator); if(z) openPanel(z.id); }
 </script>
 </body>
