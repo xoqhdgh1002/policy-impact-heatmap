@@ -86,7 +86,7 @@
 
   /* ---- heatmap ---- */
   .board{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
-  .grid{display:grid;grid-template-columns:168px repeat(8,1fr);min-width:760px}
+  .grid{display:grid;grid-template-columns:200px repeat(7,1fr);min-width:720px}
   .gridscroll{overflow-x:auto}
   .gh{position:sticky;top:0;background:var(--bg2);border-bottom:1px solid var(--line2);
     padding:10px 8px;font-size:11px;font-weight:700;color:var(--muted);text-align:center;cursor:pointer;
@@ -98,6 +98,12 @@
   .rowlab{position:sticky;left:0;z-index:4;background:var(--surface);border-right:1px solid var(--line2);
     border-bottom:1px solid var(--line);padding:0 12px;display:flex;align-items:center;
     font-size:13px;font-weight:700;min-height:60px}
+  .rowlab.pol{flex-direction:column;align-items:flex-start;justify-content:center;gap:2px;cursor:pointer;transition:.15s;line-height:1.22}
+  .rowlab.pol:hover{background:var(--surface2)}
+  .rowlab.pol .pn{font-family:var(--mono);font-size:10px;color:var(--accent);font-weight:700}
+  .rowlab.pol .pl{font-size:13px;font-weight:700;letter-spacing:-.01em}
+  .rowlab.pol .pd{font-family:var(--mono);font-size:10px;color:var(--faint)}
+  .gh.sec{font-size:10.5px;line-height:1.2}
   .cell{border-bottom:1px solid var(--line);border-right:1px solid rgba(255,255,255,.02);
     min-height:60px;display:flex;align-items:center;justify-content:center;cursor:pointer;
     position:relative;transition:.14s;background:transparent}
@@ -263,7 +269,7 @@
     <p class="sub" style="margin:16px 0 0">근거 출처: DART 전자공시 · 한경컨센서스 · 네이버 금융 리서치 · 법제처 (전부 무료). 평가는 사용자의 감이 아니라 <b style="color:var(--muted)">출처로 뒷받침된 도메인 검증</b>입니다.</p>
   </section>
 
-  <p class="foot">정책 8건 · 업종 7개 — 샘플 데이터 · v2.7 (대시보드: QA 내보내기 길이 안전·eval→data·What's New) · <a href="dashboard.html">평가 대시보드 →</a></p>
+  <p class="foot">정책 8건 · 업종 7개 — 샘플 데이터 · v2.8 (히트맵 전치: 행=정책 시점순·열=업종 · 시점 메타) · <a href="dashboard.html">평가 대시보드 →</a></p>
 </div>
 
 <div class="scrim" id="scrim" onclick="closeDrawer()"></div>
@@ -289,18 +295,24 @@ const M = {};
 POLICIES.forEach(p=>p.impacts.forEach(im=>{ M[im.s+"|"+p.n]={...im,p}; }));
 const cls = v => v===0?"na":(v>0?"p":"n")+Math.abs(v);
 
-// render grid
+// 정책을 시점 오름차순(최근이 아래)으로 정렬 — 이예준 요청. policyTime.sort 기준.
+const PT = window.DEMO.policyTime || {};
+const polSort = p => (PT[p.n] && PT[p.n].sort) || p.date || "";
+const POL_ROWS = [...POLICIES].sort((a,b)=> polSort(a).localeCompare(polSort(b)) || a.n.localeCompare(b.n));
+
+// render grid — 행=정책(시점순), 열=업종 (전치: 이예준·박수민 요청)
 const grid = document.getElementById("grid");
-let html = `<div class="gh corner">업종 ＼ 정책</div>`;
-POLICIES.forEach(p=>{ html += `<div class="gh" onclick="openPolicy('${p.n}')"><span class="pn">${p.n}</span>${p.short}</div>`; });
-SECTORS.forEach(s=>{
-  html += `<div class="rowlab">${s}</div>`;
-  POLICIES.forEach(p=>{
+let html = `<div class="gh corner">정책 ↓시점 ＼ 업종</div>`;
+SECTORS.forEach(s=>{ html += `<div class="gh sec">${s}</div>`; });
+POL_ROWS.forEach(p=>{
+  const d = (PT[p.n] && PT[p.n].sort) || p.date || "";
+  html += `<div class="rowlab pol" onclick="openPolicy('${p.n}')" title="${p.title}"><span class="pn">${p.n}</span><span class="pl">${p.short}</span><span class="pd">${d}</span></div>`;
+  SECTORS.forEach(s=>{
     const m = M[s+"|"+p.n];
     if(!m){ html += `<div class="cell na"><span class="v">·</span></div>`; }
     else{
       const sign = m.v>0?"+":"";
-      html += `<div class="cell ${cls(m.v)}" onclick="openPolicy('${p.n}','${s.replace(/'/g,"")}')" title="${s} × ${p.short}: ${sign}${m.v}">
+      html += `<div class="cell ${cls(m.v)}" onclick="openPolicy('${p.n}','${s.replace(/'/g,"")}')" title="${p.short} × ${s}: ${sign}${m.v}">
         <span class="v">${sign}${m.v}</span><span class="seed">◍</span></div>`;
     }
   });
@@ -337,11 +349,22 @@ function openPolicy(n, hot){
     <div class="dsec thesis"><div class="dt">📌 상세 분석 — 업종 내 최대 수혜/피해</div>
       <p>${p.thesis}</p>
       <div class="thesis-tag">◍ <b>AI 초안</b> · 매출/이익 비중은 DART·리포트로 검증 필요</div></div>` : "";
+  const t = PT[p.n];
+  const timeSec = t ? `<div class="dsec"><div class="dt">시점 — 이슈화 · 입법 · 시행 <span style="color:var(--faint);text-transform:none;letter-spacing:0;font-weight:600">⚠ AI 추정·검수 전</span></div>
+    <ul class="chgs">
+      ${t.issue?`<li>이슈화: ${t.issue}</li>`:""}
+      ${t.law?`<li>입법/의결: ${t.law}</li>`:""}
+      ${t.enforce?`<li>시행: ${t.enforce}</li>`:""}
+    </ul></div>` : "";
+  const stockSec = `<div class="dsec"><div class="dt">과거 실제 임팩트 — 주가 반응</div>
+    <p style="color:var(--faint);font-size:12.5px;line-height:1.55">📈 정책 발표 후 해당 업종·기업의 실제 주가 반응을 수치화해 <b style="color:var(--muted)">예상(점수) vs 실제</b>를 비교 — <b style="color:#f4c66a">S5 예정</b>(네이버 시세 연동). 데이터 연결 시 이 자리에 표시됩니다.</p></div>`;
   document.getElementById("dbody").innerHTML = `
     <div class="dsec"><div class="dt">정책 요약</div><p>${p.summary}</p></div>
+    ${timeSec}
     <div class="dsec"><div class="dt">핵심 변화점</div><ul class="chgs">${p.changes.map(c=>`<li>${c}</li>`).join("")}</ul></div>
     <div class="dsec"><div class="dt">수혜 / 피해 (업종 · 기업)</div>${impacts}</div>
-    ${thesisSec}`;
+    ${thesisSec}
+    ${stockSec}`;
   scrim.classList.add("open"); drawer.classList.add("open"); drawer.setAttribute("aria-hidden","false");
 }
 function closeDrawer(){ scrim.classList.remove("open"); drawer.classList.remove("open"); drawer.setAttribute("aria-hidden","true"); }
