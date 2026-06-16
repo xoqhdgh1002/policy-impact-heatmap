@@ -14,6 +14,8 @@ window.DEMO = {
   // ── 버전 이력 (단일 소스) ────────────────────────────────────────────────
   // W6. version 라벨·What's New 패널·푸터가 모두 이 배열 [0]을 읽는다. 새 배포 = 맨 위에 한 칸 추가.
   changelog: [
+    { ver:"v2.9", date:"2026-06-17", items:[
+      "AI 스킬 로드맵 등록 — daily-brief(매일 아침 정책 브리핑)·impact-backfill(실제 임팩트 주가) · 이예준 요청, 네트워크 러너 대기" ] },
     { ver:"v2.8", date:"2026-06-17", items:[
       "히트맵 전치 — 행=정책(시점순)·열=업종 (이예준·박수민 요청)",
       "정책 시점(이슈화·입법·시행) 드로어 표시 + 시점 정렬(최근이 아래) · 시점은 AI 추정·이예준 검수 대상",
@@ -39,7 +41,11 @@ window.DEMO = {
       { t:"평가를 '감 투표'에서 권위 출처 대조 검증으로 재정의 — 셀마다 근거출처(ev)·검증자(vby)·보강필요(needsrc)", st:"done", ver:"v2" },
       { t:"상세 분석(정책핵심→수혜 업종→업종 내 top 기업) 서술 생성", st:"done", ver:"v2.1" },
       { t:"P2×반도체 교정 — 삼성전자(둔감)→차량용·전력 반도체 중소·중견", st:"done", ver:"v2" },
-      { t:"DART 사업보고서 부문별 매출/이익 비중 자동 추출", st:"routed", note:"AI 스킬 dart-financials (스펙)" } ]},
+      { t:"히트맵 전치 — 행=정책(시점순)·열=업종 (박수민과 공동 요청)", st:"done", ver:"v2.8" },
+      { t:"정책 시점(이슈화·입법·시행) 표시 + 시점 정렬(최근 아래)", st:"done", ver:"v2.8", note:"시점은 AI 추정 → 이예준 검수 대상" },
+      { t:"DART 사업보고서 부문별 매출/이익 비중 자동 추출", st:"routed", note:"AI 스킬 dart-financials (스펙)" },
+      { t:"매일 아침 신규 정책 헤드라인 → 컨펌 후 히트맵 추가", st:"routed", note:"AI 스킬 daily-brief · 네트워크 러너 필요" },
+      { t:"과거 정책 실제 임팩트(주가 반응) 표시", st:"routed", note:"AI 스킬 impact-backfill · 드로어 자리 예고됨(v2.8)" } ]},
     { member:"박수민", role:"UX·가치·QA", color:"gold", items:[
       { t:"⑤ AI 초안 고지 — 상단 고정 배너(모바일 포함)", st:"done", ver:"v2.4" },
       { t:"①② 정체성·타깃 한 줄 카피 — 히어로 '무엇/누구'", st:"done", ver:"v2.4" },
@@ -91,7 +97,13 @@ window.DEMO = {
       io:"기업/종목 → 부문별 매출·이익 비중", trigger:"thesis 보강 / 검증", src:"dart", spec:"skills/dart-financials.md" },
     { id:"feedback-route", name:"피드백 라우팅", ai:true, status:"planned",
       why:"들어온 코멘트를 'AI 필요/불필요'로 분류해 스킬 또는 사람에게 자동 배정 — 본 트리아지의 자동화",
-      io:"멤버 코멘트 → 분류 + 대상 스킬/액션", trigger:"피드백 수신 시", spec:"skills/feedback-route.md" }
+      io:"멤버 코멘트 → 분류 + 대상 스킬/액션", trigger:"피드백 수신 시", spec:"skills/feedback-route.md" },
+    { id:"daily-brief", name:"매일 아침 정책 브리핑", ai:true, status:"planned",
+      why:"전날 뉴스·보도자료에서 신규 정책/규제 3~5개 탐지·요약·선별 → 컨펌 후 히트맵에 추가 (이예준 Req4)",
+      io:"D-1 뉴스 → 헤드라인[]{title,url,요약,영향초안}", trigger:"cron 매일 06:00 KST · 네트워크 러너 필요", spec:"skills/daily-brief.md" },
+    { id:"impact-backfill", name:"실제 임팩트 백필(주가)", ai:true, status:"planned",
+      why:"과거 정책 발표 후 관련 업종·기업 실제 주가 반응을 수집·정규화 → 예상(점수) vs 실제 비교 (이예준 Req3·박수민 S5)",
+      io:"정책 시점 + 기업 → actual[]{co,window,ret,vs_kospi}", trigger:"과거 시점 정책 · 네트워크 러너 필요", spec:"skills/impact-backfill.md" }
   ],
   // AI 불필요(사람·코드)로 분류되는 코멘트는 skills에 넣지 않는다 → feedback-triage.md 라우팅표 참조.
 
