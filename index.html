@@ -158,6 +158,14 @@
   .dsec.thesis p{font-size:13px;color:var(--text);line-height:1.66}
   .thesis-tag{margin-top:10px;font-size:10.5px;color:var(--faint);font-family:var(--mono);display:flex;align-items:center;gap:6px}
   .thesis-tag b{color:#f4c66a;font-weight:700}
+  .actual{border:1px solid var(--line2);border-radius:var(--rs);padding:12px 13px;background:var(--surface)}
+  .actual.pos{border-left:3px solid var(--pos-ink)} .actual.neg{border-left:3px solid var(--neg-ink)} .actual.flat{border-left:3px solid var(--faint)}
+  .actual .actual-h{display:flex;align-items:center;gap:9px;margin-bottom:6px}
+  .actual .aw{font-family:var(--mono);font-size:11px;color:var(--faint)}
+  .actual .ad{font-size:13px;font-weight:800}
+  .actual.pos .ad{color:var(--pos-ink)} .actual.neg .ad{color:var(--neg-ink)}
+  .actual p{font-size:13px;color:var(--text);line-height:1.55}
+  .actual .asrc{margin-top:6px;font-size:11px;color:var(--faint);font-family:var(--mono)}
   .chgs{display:flex;flex-direction:column;gap:6px}
   .chgs li{list-style:none;font-size:13.5px;color:var(--muted);padding-left:16px;position:relative}
   .chgs li:before{content:"▸";position:absolute;left:0;color:var(--accent)}
@@ -269,7 +277,7 @@
     <p class="sub" style="margin:16px 0 0">근거 출처: DART 전자공시 · 한경컨센서스 · 네이버 금융 리서치 · 법제처 (전부 무료). 평가는 사용자의 감이 아니라 <b style="color:var(--muted)">출처로 뒷받침된 도메인 검증</b>입니다.</p>
   </section>
 
-  <p class="foot">정책 8건 · 업종 7개 — 샘플 데이터 · v3.0 (네트워크 러너 가동 · daily-brief 06:03 KST + 히트맵 전치) · <a href="dashboard.html">평가 대시보드 →</a></p>
+  <p class="foot">정책 8건 · 업종 7개 — 샘플 데이터 · v3.1 (예측→실제 아카이브: 주가 반응 백필 + 러너·전치) · <a href="dashboard.html">평가 대시보드 →</a></p>
 </div>
 
 <div class="scrim" id="scrim" onclick="closeDrawer()"></div>
@@ -297,6 +305,7 @@ const cls = v => v===0?"na":(v>0?"p":"n")+Math.abs(v);
 
 // 정책을 시점 오름차순(최근이 아래)으로 정렬 — 이예준 요청. policyTime.sort 기준.
 const PT = window.DEMO.policyTime || {};
+const ACT = window.DEMO.actualImpact || {};
 const polSort = p => (PT[p.n] && PT[p.n].sort) || p.date || "";
 const POL_ROWS = [...POLICIES].sort((a,b)=> polSort(a).localeCompare(polSort(b)) || a.n.localeCompare(b.n));
 
@@ -356,8 +365,17 @@ function openPolicy(n, hot){
       ${t.law?`<li>입법/의결: ${t.law}</li>`:""}
       ${t.enforce?`<li>시행: ${t.enforce}</li>`:""}
     </ul></div>` : "";
-  const stockSec = `<div class="dsec"><div class="dt">과거 실제 임팩트 — 주가 반응</div>
-    <p style="color:var(--faint);font-size:12.5px;line-height:1.55">📈 정책 발표 후 해당 업종·기업의 실제 주가 반응을 수치화해 <b style="color:var(--muted)">예상(점수) vs 실제</b>를 비교 — <b style="color:#f4c66a">S5 예정</b>(네이버 시세 연동). 데이터 연결 시 이 자리에 표시됩니다.</p></div>`;
+  const ai = ACT[p.n];
+  const dirLbl = d => d==="pos"?"📈 강세":d==="neg"?"📉 약세":"↔ 관망";
+  const stockSec = ai ? `<div class="dsec"><div class="dt">과거 실제 임팩트 — 주가 반응 <span style="color:var(--faint);text-transform:none;letter-spacing:0;font-weight:600">⚠ AI 추정·검수 전</span></div>
+    <div class="actual ${ai.dir}">
+      <div class="actual-h"><span class="aw">${ai.window}</span><span class="ad">${dirLbl(ai.dir)}</span></div>
+      <p>${ai.text}</p>
+      ${ai.src?`<div class="asrc">출처: ${ai.src}</div>`:""}
+      <div class="asrc" style="color:var(--accent)">예측(점수) ↔ 실제(주가) 아카이브 · 정책효과 단독 분리는 한계</div>
+    </div></div>`
+    : `<div class="dsec"><div class="dt">과거 실제 임팩트 — 주가 반응</div>
+    <p style="color:var(--faint);font-size:12.5px;line-height:1.55">📈 러너 분석 대기 — 다음 배치에서 발표 후 시세 반응을 채웁니다(impact-backfill). 예상(점수) vs 실제 비교 아카이브.</p></div>`;
   document.getElementById("dbody").innerHTML = `
     <div class="dsec"><div class="dt">정책 요약</div><p>${p.summary}</p></div>
     ${timeSec}

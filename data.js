@@ -14,6 +14,8 @@ window.DEMO = {
   // ── 버전 이력 (단일 소스) ────────────────────────────────────────────────
   // W6. version 라벨·What's New 패널·푸터가 모두 이 배열 [0]을 읽는다. 새 배포 = 맨 위에 한 칸 추가.
   changelog: [
+    { ver:"v3.1", date:"2026-06-17", items:[
+      "히트맵 정체성 = '예측 → 실제 아카이브'(봉호 승인) — impact-backfill 가동: 정책 발표 후 실제 주가 반응을 드로어에 표시(밸류업·11차전기본·스트레스DSR·K칩스 4개 시드). AI 추정·교란요인 명시·이예준 검수 대상" ] },
     { ver:"v3.0", date:"2026-06-17", items:[
       "네트워크 러너 가동 — 봇 자체 WebSearch + openclaw cron(매일 06:03 KST). daily-brief 자동 브리핑 시작(반영은 컨펌 게이트). impact-backfill·evidence-link도 온디맨드 실행 가능" ] },
     { ver:"v2.9", date:"2026-06-17", items:[
@@ -47,7 +49,7 @@ window.DEMO = {
       { t:"정책 시점(이슈화·입법·시행) 표시 + 시점 정렬(최근 아래)", st:"done", ver:"v2.8", note:"시점은 AI 추정 → 이예준 검수 대상" },
       { t:"DART 사업보고서 부문별 매출/이익 비중 자동 추출", st:"routed", note:"AI 스킬 dart-financials (스펙)" },
       { t:"매일 아침 신규 정책 헤드라인 → 컨펌 후 히트맵 추가", st:"routed", note:"AI 스킬 daily-brief · 네트워크 러너 필요" },
-      { t:"과거 정책 실제 임팩트(주가 반응) 표시", st:"routed", note:"AI 스킬 impact-backfill · 드로어 자리 예고됨(v2.8)" } ]},
+      { t:"과거 정책 실제 임팩트(주가 반응) 표시 — 예측→아카이브 정체성", st:"done", ver:"v3.1", note:"impact-backfill 4개 시드(밸류업·전기본·DSR·K칩스), 드로어에 예상 vs 실제. AI 추정→이예준 검수" } ]},
     { member:"박수민", role:"UX·가치·QA", color:"gold", items:[
       { t:"⑤ AI 초안 고지 — 상단 고정 배너(모바일 포함)", st:"done", ver:"v2.4" },
       { t:"①② 정체성·타깃 한 줄 카피 — 히어로 '무엇/누구'", st:"done", ver:"v2.4" },
@@ -56,7 +58,7 @@ window.DEMO = {
       { t:"⑥ 점수에 확신도(Confidence%) 병기", st:"pending", note:"김태윤 z2 '강도 vs 확신도 분리'와 통합 — 제품결정 대기" },
       { t:"① 정책을 세로축으로 (정책 수 증가 대비)", st:"pending", note:"데이터+레이아웃 전치 — 태봉호 파이프라인과 함께" },
       { t:"S1~S4 정책 일자·분류·기간 필터 · 노출 스코핑", st:"pending", note:"데이터 스키마(태봉호) + 제품결정" },
-      { t:"S5 과거 정책 실제 임팩트 아카이브 (시세·주가변동)", st:"pending", note:"히트맵 정체성 결정 대기 · 범위 초과시 드롭 가능" },
+      { t:"S5 과거 정책 실제 임팩트 아카이브 (시세·주가변동)", st:"done", ver:"v3.1", note:"봉호 '예측→아카이브' 정체성 승인 → impact-backfill 4개 시드 반영(드로어), 나머지 러너 대기" },
       { t:"히트맵 버저닝 — 버전 라벨·What's New 패널(changelog 단일소스)", st:"done", ver:"v2.6", note:"체크리스트 diff형은 다음 단계" },
       { t:"대시보드 QA 체크리스트 입력란 (셀 검증 외 정성 질문 in-app 캡처)", st:"done", ver:"v2.6" } ]},
     { member:"류나연", role:"첫 vertical·정책 소스", color:"doubt", items:[
@@ -103,9 +105,9 @@ window.DEMO = {
     { id:"daily-brief", name:"매일 아침 정책 브리핑", ai:true, status:"partial",
       why:"전날 뉴스·보도자료에서 신규 정책/규제 3~5개 탐지·요약·선별 → 컨펌 후 히트맵에 추가 (이예준 Req4). 🟢 cron 가동 중",
       io:"D-1 뉴스 → 헤드라인[]{title,url,요약,영향초안}", trigger:"cron 매일 06:03 KST(봇 WebSearch) · 반영은 컨펌 게이트", spec:"skills/daily-brief.md" },
-    { id:"impact-backfill", name:"실제 임팩트 백필(주가)", ai:true, status:"planned",
-      why:"과거 정책 발표 후 관련 업종·기업 실제 주가 반응을 수집·정규화 → 예상(점수) vs 실제 비교 (이예준 Req3·박수민 S5)",
-      io:"정책 시점 + 기업 → actual[]{co,window,ret,vs_kospi}", trigger:"과거 시점 정책 · 네트워크 러너 필요", spec:"skills/impact-backfill.md" }
+    { id:"impact-backfill", name:"실제 임팩트 백필(주가)", ai:true, status:"partial",
+      why:"과거 정책 발표 후 관련 업종·기업 실제 주가 반응 → 예상(점수) vs 실제 비교 (이예준 Req3·박수민 S5). 🟢 4개 정책 시드 반영(드로어), 나머지 러너 대기",
+      io:"정책 시점+기업 → actualImpact{window,dir,text}", trigger:"과거 시점 정책 · 봇 WebSearch 온디맨드", spec:"skills/impact-backfill.md" }
   ],
   // AI 불필요(사람·코드)로 분류되는 코멘트는 skills에 넣지 않는다 → feedback-triage.md 라우팅표 참조.
 
@@ -122,6 +124,17 @@ window.DEMO = {
     P6:{ sort:"2024-12", issue:"2024", law:"2024-12 국회 의결", enforce:"2025" },
     P2:{ sort:"2025-01", issue:"2024-12", law:"환경부 지침", enforce:"2025-01" },
     P5:{ sort:"2025-02", issue:"2024 실무안", law:"2025 확정", enforce:"2025~ 이행" }
+  },
+
+  // 과거 실제 임팩트 — 정책 발표 후 관련 업종·기업 주가 반응 (impact-backfill 스킬, 이예준 Req3-2 + 박수민 S5).
+  // 히트맵 정체성 = "예상(점수) → 실제(주가)" 아카이브 (봉호 승인 2026-06-17).
+  // ⚠️ AI 추정·검수 전(이예준). 러너(WebSearch)로 ground. dir=실제 방향, 정책 단독효과는 교란요인으로 분리 어려움(명시).
+  actualImpact: {
+    P1:{ window:"2024~", dir:"pos", text:"반도체 대형주(삼성전자·SK하이닉스) 강세 흐름. ⚠ 단 AI 메모리 슈퍼사이클이 주도 — 세액공제 정책의 단독 기여는 분리 어려움." },
+    P3:{ window:"2024말~2026.5", dir:"pos", text:"KRX 은행업지수 833.96(2024말)→1,303.78(2025말)→1,609.16(2026.5)로 강세. 저PBR 재평가·주주환원 확대 기대 반영(금리·실적도 동반).", src:"KDI 경제정보센터·교보증권" },
+    P4:{ window:"2024-09~", dir:"neg", text:"대출한도 축소로 주택수요·건설 투자심리 위축. ⚠ 건설주는 PF·금리 등 복합요인 — 정책 단독효과 분리 어려움." },
+    P5:{ window:"2025~", dir:"pos", text:"원전주 강세 — 두산에너빌리티 1Q26 영업익 +63.9% YoY, SMR·대형원전 수주 모멘텀. ⚠ AI 데이터센터 전력수요가 동반 견인." }
+    /* P2·P6·P7·P8 = 러너 다음 배치 대기 */
   },
 
   // 평가 구역(eval-board.md 6구역과 1:1). 대시보드가 멤버별 데이터 슬라이스를 그린다.
