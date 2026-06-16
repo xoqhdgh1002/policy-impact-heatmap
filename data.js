@@ -14,6 +14,8 @@ window.DEMO = {
   // ── 버전 이력 (단일 소스) ────────────────────────────────────────────────
   // W6. version 라벨·What's New 패널·푸터가 모두 이 배열 [0]을 읽는다. 새 배포 = 맨 위에 한 칸 추가.
   changelog: [
+    { ver:"v3.0", date:"2026-06-17", items:[
+      "네트워크 러너 가동 — 봇 자체 WebSearch + openclaw cron(매일 06:03 KST). daily-brief 자동 브리핑 시작(반영은 컨펌 게이트). impact-backfill·evidence-link도 온디맨드 실행 가능" ] },
     { ver:"v2.9", date:"2026-06-17", items:[
       "AI 스킬 로드맵 등록 — daily-brief(매일 아침 정책 브리핑)·impact-backfill(실제 임팩트 주가) · 이예준 요청, 네트워크 러너 대기" ] },
     { ver:"v2.8", date:"2026-06-17", items:[
@@ -98,9 +100,9 @@ window.DEMO = {
     { id:"feedback-route", name:"피드백 라우팅", ai:true, status:"planned",
       why:"들어온 코멘트를 'AI 필요/불필요'로 분류해 스킬 또는 사람에게 자동 배정 — 본 트리아지의 자동화",
       io:"멤버 코멘트 → 분류 + 대상 스킬/액션", trigger:"피드백 수신 시", spec:"skills/feedback-route.md" },
-    { id:"daily-brief", name:"매일 아침 정책 브리핑", ai:true, status:"planned",
-      why:"전날 뉴스·보도자료에서 신규 정책/규제 3~5개 탐지·요약·선별 → 컨펌 후 히트맵에 추가 (이예준 Req4)",
-      io:"D-1 뉴스 → 헤드라인[]{title,url,요약,영향초안}", trigger:"cron 매일 06:00 KST · 네트워크 러너 필요", spec:"skills/daily-brief.md" },
+    { id:"daily-brief", name:"매일 아침 정책 브리핑", ai:true, status:"partial",
+      why:"전날 뉴스·보도자료에서 신규 정책/규제 3~5개 탐지·요약·선별 → 컨펌 후 히트맵에 추가 (이예준 Req4). 🟢 cron 가동 중",
+      io:"D-1 뉴스 → 헤드라인[]{title,url,요약,영향초안}", trigger:"cron 매일 06:03 KST(봇 WebSearch) · 반영은 컨펌 게이트", spec:"skills/daily-brief.md" },
     { id:"impact-backfill", name:"실제 임팩트 백필(주가)", ai:true, status:"planned",
       why:"과거 정책 발표 후 관련 업종·기업 실제 주가 반응을 수집·정규화 → 예상(점수) vs 실제 비교 (이예준 Req3·박수민 S5)",
       io:"정책 시점 + 기업 → actual[]{co,window,ret,vs_kospi}", trigger:"과거 시점 정책 · 네트워크 러너 필요", spec:"skills/impact-backfill.md" }
